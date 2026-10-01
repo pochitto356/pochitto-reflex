@@ -10,12 +10,11 @@
   'use strict';
 
   // ---- 広告ユニットID -------------------------------------------------
-  // ★AdMobで発行したら本番IDに差し替えて IS_TESTING を false にする。
-  //   今はGoogle公式のテスト広告ID(収益ゼロ)。この状態で審査に出さないこと。
-  var IS_TESTING = true;
+  // 本番ID(AdMob 2026-10-01 発行)。テストしたいときだけ IS_TESTING を true にする。
+  var IS_TESTING = false;
   var AD_IDS = {
-    banner: 'ca-app-pub-3940256099942544/2934735716',        // ← PR_banner
-    interstitial: 'ca-app-pub-3940256099942544/4411468910'   // ← PR_interstitial
+    banner: 'ca-app-pub-7792368657314009/1614947458',        // PR_banner
+    interstitial: 'ca-app-pub-7792368657314009/2333047039'   // PR_interstitial
   };
   var PRODUCT_ID = 'pochittoreflex_remove_ads'; // 非消耗型 ¥300 広告削除
 
@@ -238,7 +237,7 @@
 
   // ---- シェア ---------------------------------------------------------
   // ★App Storeで公開されたら APP_STORE_ID を入れると、シェア文にダウンロードURLが付く
-  var APP_STORE_ID = '';
+  var APP_STORE_ID = '6818035906';
   function share(text) {
     var url = APP_STORE_ID ? 'https://apps.apple.com/jp/app/id' + APP_STORE_ID : '';
     var full = url ? text + '\n' + url : text;
