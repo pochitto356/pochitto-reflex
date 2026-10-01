@@ -1,0 +1,71 @@
+# Codemagic CI/CD 設定 (ぽちっと反射神経 / Capacitor 7)
+# Macなしでクラウド上のMacでiOSビルド〜App Store Connectアップロードまで行う。
+#
+# ★ビルド前に埋める値 (konishiさんの作業。詳細は SETUP.md)
+#   APP_APPLE_ID    : App Store Connect でアプリを新規作成したときに発行される数字
+#   ADMOB_APP_ID    : AdMob で iOS アプリを登録したときの ca-app-pub-XXXX~YYYY
+#
+# ★Codemagicで「Start new build」を押す前に必ず ?app_id= でアプリを絞り込むこと
+#   (2026-09-04 に GRID HUNTER のビルドを誤爆した教訓)
+workflows:
+  ios-release:
+    name: iOS Release (App Store)
+    max_build_duration: 45
+    integrations:
+      app_store_connect: codemagic
+    environment:
+      node: 20
+      xcode: latest
+      cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.konishi.pochittoreflex
+      vars:
+        APP_APPLE_ID: "0000000000"   # ★App Store Connectでアプリ作成後に差し替え
+        ADMOB_APP_ID: "ca-app-pub-3940256099942544~1458002511"   # ★Google公式テスト用。AdMob登録後に差し替え
+        MARKETING_VERSION: "1.0"
+    scripts:
+      - name: npmパッケージ取得
+        script: npm install
+      - name: iOSプラットフォーム生成
+        script: npx cap add ios
+      - name: アイコンとスプラッシュ生成
+        script: npx @capacitor/assets generate --ios --iconBackgroundColor '#0d1220' --splashBackgroundColor '#0d1220'
+      - name: Capacitor同期
+        script: npx cap sync ios
+      - name: 最低対応OSを iOS 15 に(2027年春からAppleが15.0以上を必須化)
+        script: |
+          cd ios/App
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' App.xcodeproj/project.pbxproj
+          sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '15.0'/" Podfile
+          pod install
+      - name: Info.plist調整(暗号化申告・縦画面固定・AdMob/ATT)
+        script: |
+          PLIST=ios/App/App/Info.plist
+          plutil -replace ITSAppUsesNonExemptEncryption -bool NO "$PLIST"
+          # 縦画面固定。iPad も縦のみ + フルスクリーン必須(未設定だとアップロードエラー 90474)
+          plutil -replace UISupportedInterfaceOrientations -json '["UIInterfaceOrientationPortrait"]' "$PLIST"
+          plutil -replace "UISupportedInterfaceOrientations~ipad" -json '["UIInterfaceOrientationPortrait","UIInterfaceOrientationPortraitUpsideDown"]' "$PLIST"
+          plutil -replace UIRequiresFullScreen -bool YES "$PLIST"
+          plutil -replace CFBundleDisplayName -string "ぽちっと反射神経" "$PLIST"
+          plutil -replace GADApplicationIdentifier -string "$ADMOB_APP_ID" "$PLIST"
+          plutil -replace NSUserTrackingUsageDescription -string "広告をあなたに関連性の高い内容にするために使用します。許可しなくても全種目を無料で遊べます。" "$PLIST"
+          plutil -replace SKAdNetworkItems -json '[{"SKAdNetworkIdentifier":"cstr6suwn9.skadnetwork"}]' "$PLIST"
+      - name: ビルド番号を自動採番
+        script: |
+          cd ios/App
+          BUILD_NUMBER=$(($(app-store-connect get-latest-testflight-build-number "$APP_APPLE_ID" 2>/dev/null || echo 0) + 1))
+          agvtool new-version -all $BUILD_NUMBER
+          agvtool new-marketing-version "$MARKETING_VERSION"
+      - name: 署名設定を適用
+        script: xcode-project use-profiles
+      - name: IPAをビルド
+        script: xcode-project build-ipa --workspace ios/App/App.xcworkspace --scheme App
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        # TestFlight外部テスト提出は行わない(App Store審査用のアップロードのみ)
+        submit_to_testflight: false

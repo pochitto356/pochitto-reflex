@@ -1,0 +1,10 @@
+{
+  "appId": "com.konishi.pochittoreflex",
+  "appName": "ぽちっと反射神経",
+  "webDir": "www",
+  "backgroundColor": "#0d1220",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0d1220"
+  }
+}
