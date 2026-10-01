@@ -21,8 +21,8 @@ workflows:
         distribution_type: app_store
         bundle_identifier: com.konishi.pochittoreflex
       vars:
-        APP_APPLE_ID: "0000000000"   # ★App Store Connectでアプリ作成後に差し替え
-        ADMOB_APP_ID: "ca-app-pub-3940256099942544~1458002511"   # ★Google公式テスト用。AdMob登録後に差し替え
+        APP_APPLE_ID: "6818035906"
+        ADMOB_APP_ID: "ca-app-pub-7792368657314009~8846484493"
         MARKETING_VERSION: "1.0"
     scripts:
       - name: npmパッケージ取得
