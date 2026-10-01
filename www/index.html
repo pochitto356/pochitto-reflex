@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>ぽちっと反射神経</title>
+<style>
+:root{
+  --bg:#0d1220; --bg2:#151c2f; --card:#1b2338; --line:#2a3552; --ink:#f2f5fb; --sub:#8e9ab5;
+  --go:#22d07a; --go-d:#17a35f; --stop:#ff4b55; --stop-d:#c9343d; --wait:#e8394a; --amber:#ffb020; --blue:#3d8bff;
+  --gold:#ffd166;
+  --font:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans CJK JP",system-ui,-apple-system,sans-serif;
+  --num:"SF Pro Rounded",ui-rounded,"Hiragino Maru Gothic ProN","Hiragino Sans",system-ui,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--font);overscroll-behavior:none;overflow:hidden}
+#app{position:fixed;inset:0;max-width:520px;margin:0 auto}
+@media (min-width:700px){#app{zoom:1.45}}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:calc(env(safe-area-inset-top) + 14px) 18px calc(env(safe-area-inset-bottom) + 18px)}
+.screen.on{display:flex}
+body.has-banner .screen.bannered{padding-bottom:calc(env(safe-area-inset-bottom) + 76px)}
+
+/* ---------- home ---------- */
+.logo{text-align:center;margin:14px 0 2px}
+.logo .mk{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:30px;letter-spacing:.04em}
+.logo .dot{width:22px;height:22px;border-radius:50%;background:var(--go);box-shadow:0 0 18px var(--go)}
+.tag{text-align:center;color:var(--sub);font-size:13px;margin-bottom:16px}
+.agecard{background:linear-gradient(135deg,#1f2a47,#18203a);border:1px solid var(--line);border-radius:18px;padding:14px 16px;
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.agecard .l{font-size:12px;color:var(--sub)}
+.agecard .v{font-family:var(--num);font-size:34px;font-weight:800;line-height:1.1}
+.agecard .v small{font-size:15px;margin-left:2px;color:var(--sub);font-weight:700}
+.agecard .r{text-align:right;font-size:12px;color:var(--sub);line-height:1.7}
+.agecard .r b{color:var(--ink);font-size:16px;font-family:var(--num)}
+.mode{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;padding:14px;margin:0 0 12px;color:var(--ink);font-family:inherit;cursor:pointer;box-shadow:0 4px 0 #0a0e19}
+.mode:active{transform:translateY(3px);box-shadow:0 1px 0 #0a0e19}
+.mode .ic{flex:none;width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800}
+.mode .ic img{width:48px;height:48px;display:block}
+.mode .t{font-weight:800;font-size:17px}
+.mode .d{font-size:12px;color:var(--sub);margin-top:3px;line-height:1.45}
+.mode .best{margin-left:auto;text-align:right;font-size:11px;color:var(--sub);flex:none}
+.mode .best b{display:block;font-family:var(--num);font-size:18px;color:var(--ink)}
+.ic.simple{background:rgba(34,208,122,.15);color:var(--go)}
+.ic.gonogo{background:rgba(255,75,85,.15);color:var(--stop)}
+.ic.numbers{background:rgba(61,139,255,.15);color:var(--blue)}
+.ic.color{background:rgba(255,176,32,.15);color:var(--amber)}
+.navrow{display:flex;gap:10px;margin-top:4px}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;font-family:inherit;
+  color:#062314;background:var(--go);box-shadow:0 4px 0 var(--go-d);cursor:pointer;margin:8px 0}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--go-d)}
+.btn.ghost{background:var(--card);color:var(--ink);box-shadow:0 4px 0 #0a0e19;border:1px solid var(--line)}
+.btn.ghost:active{box-shadow:0 1px 0 #0a0e19}
+.btn.blue{background:var(--blue);color:#fff;box-shadow:0 4px 0 #2a63bd}
+.navrow .btn{flex:1;margin:0}
+.streak{text-align:center;font-size:12px;color:var(--sub);margin:14px 0 4px}
+.streak b{color:var(--amber)}
+
+/* ---------- play ---------- */
+#play{padding:0;overflow:hidden}
+#pad{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  touch-action:none;cursor:pointer;background:var(--bg2);transition:none;padding:0 24px}
+#pad.wait{background:var(--wait)}
+#pad.go{background:var(--go)}
+#pad.fly{background:var(--amber)}
+#pad.show{background:var(--blue)}
+#pad.neutral{background:var(--bg2)}
+.ptop{position:absolute;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:center;z-index:5;
+  padding:calc(env(safe-area-inset-top) + 8px) 14px 0;pointer-events:none}
+.ptop .x{pointer-events:auto;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.28);color:#fff;border:0;font-size:20px;
+  font-family:inherit;cursor:pointer}
+.ptop .prog{font-family:var(--num);font-weight:800;font-size:15px;background:rgba(0,0,0,.28);padding:7px 12px;border-radius:999px}
+.big{font-size:44px;font-weight:900;line-height:1.15;letter-spacing:.02em}
+.huge{font-family:var(--num);font-size:76px;font-weight:900;line-height:1}
+.huge small{font-size:26px;margin-left:4px}
+.hint{font-size:15px;opacity:.85;margin-top:14px;line-height:1.6}
+#pad.go .big,#pad.go .hint{color:#04210f}
+.dots{display:flex;gap:8px;justify-content:center;margin-top:22px}
+.dots i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.25)}
+.dots i.on{background:#fff}
+.howto{max-width:330px}
+.howto .ic{width:72px;height:72px;border-radius:22px;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900}
+.howto h2{margin:0 0 10px;font-size:24px}
+.howto p{color:var(--sub);font-size:14px;line-height:1.7;margin:0 0 20px}
+.howto .btn{width:220px;margin:0 auto}
+.sig{width:min(62vw,260px);height:min(62vw,260px);border-radius:50%;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;font-weight:900;font-size:36px;color:#fff}
+.sig.go{background:var(--go);color:#04210f;box-shadow:0 0 40px rgba(34,208,122,.6)}
+.sig.stop{background:var(--stop);box-shadow:0 0 40px rgba(255,75,85,.6)}
+.sig .mk{font-size:84px;line-height:1}
+.fb{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 70px);text-align:center;font-weight:800;font-size:20px;min-height:28px}
+.fb.ok{color:var(--go)}.fb.ng{color:var(--stop)}
+/* numbers */
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:min(92vw,420px)}
+.grid button{aspect-ratio:1;border:0;border-radius:12px;background:var(--card);color:var(--ink);font-family:var(--num);
+  font-weight:800;font-size:clamp(20px,6.5vw,30px);box-shadow:0 3px 0 #0a0e19;touch-action:none;cursor:pointer;padding:0}
+.grid button.done{opacity:.15;box-shadow:none}
+.grid button.bad{background:var(--stop)}
+.ntop{font-family:var(--num);font-size:40px;font-weight:900;margin-bottom:6px}
+.nnext{color:var(--sub);font-size:14px;margin-bottom:16px}
+.nnext b{color:var(--blue);font-size:18px}
+/* color */
+.cword{font-size:72px;font-weight:900;margin-bottom:28px;min-height:90px;line-height:90px}
+.cbtns{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:min(88vw,380px)}
+.cbtns button{height:96px;border:0;border-radius:18px;font-family:inherit;font-weight:900;font-size:22px;color:#fff;touch-action:none;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.35)}
+.cbar{width:min(88vw,380px);height:8px;border-radius:4px;background:var(--card);margin-bottom:22px;overflow:hidden}
+.cbar i{display:block;height:100%;background:var(--amber);width:100%}
+
+/* ---------- result ---------- */
+.rmode{text-align:center;color:var(--sub);font-size:14px;margin-top:10px}
+.rval{text-align:center;font-family:var(--num);font-weight:900;font-size:74px;line-height:1.05;margin:6px 0 0}
+.rval small{font-size:24px;margin-left:4px;color:var(--sub)}
+.newrec{display:block;width:max-content;margin:6px auto 0;background:var(--gold);color:#3a2a00;font-weight:900;font-size:12px;padding:4px 10px;border-radius:999px}
+.rank{display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 6px}
+.rank .g{width:86px;height:86px;display:flex;align-items:center;justify-content:center;font-family:var(--num);
+  font-weight:900;font-size:30px;color:#fff;background-size:contain;background-repeat:no-repeat;background-position:center;
+  text-shadow:0 1px 0 rgba(0,0,0,.6),0 0 6px rgba(0,0,0,.6);padding-top:4px}
+.rank .g.gSS{background-image:url(img/rank_ss.png);padding-top:18px}.rank .g.gS{background-image:url(img/rank_s.png)}
+.rank .g.gA{background-image:url(img/rank_a.png)}.rank .g.gB{background-image:url(img/rank_b.png)}
+.rank .g.gC{background-image:url(img/rank_c.png)}.rank .g.gD{background-image:url(img/rank_d.png)}
+.rank .g.gSS,.rank .g.gS{color:#3a2a00;text-shadow:0 1px 0 rgba(255,255,255,.35)}
+.rank .tt{font-weight:900;font-size:20px}
+.rank .pc{font-size:13px;color:var(--sub);margin-top:2px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 6px}
+.stats div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.stats span{display:block;font-size:11px;color:var(--sub)}
+.stats b{font-family:var(--num);font-size:22px}
+.trials{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:8px 0 4px}
+.trials span{font-family:var(--num);font-size:13px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:4px 8px;color:var(--sub)}
+.trials span.best{color:var(--go);border-color:var(--go)}
+.trials span.err{color:var(--stop);border-color:var(--stop)}
+.note{font-size:11px;color:var(--sub);text-align:center;margin:6px 0 2px;line-height:1.6}
+.badgepop{text-align:center;color:var(--gold);font-weight:800;font-size:14px;margin:6px 0}
+
+/* ---------- records / settings ---------- */
+.hdr{display:flex;align-items:center;gap:10px;margin:4px 0 14px}
+.hdr .back{width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--line);color:var(--ink);font-size:18px;cursor:pointer;font-family:inherit}
+.hdr h2{margin:0;font-size:20px}
+.sec{font-size:12px;color:var(--sub);margin:16px 0 8px;font-weight:700;letter-spacing:.06em}
+.tabs{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto}
+.tabs button{flex:none;border:1px solid var(--line);background:var(--card);color:var(--sub);border-radius:999px;padding:8px 12px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
+.tabs button.on{background:var(--ink);color:var(--bg)}
+.chart{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 10px 6px}
+.chart svg{display:block;width:100%;height:150px}
+.chart .empty{height:150px;display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:13px}
+.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.badge{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 6px;text-align:center;min-height:92px}
+.badge .e{height:40px;display:flex;justify-content:center}
+.badge .e img{width:40px;height:40px;filter:grayscale(1);opacity:.28}
+.badge .n{font-size:11px;font-weight:800;margin-top:4px}
+.badge .c{font-size:10px;color:var(--sub);margin-top:2px;line-height:1.35}
+.badge.got{border-color:var(--gold)}
+.badge.got .e img{filter:none;opacity:1}
+.list{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.item{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line);font-size:15px;cursor:pointer;color:var(--ink);text-decoration:none}
+.item:last-child{border-bottom:0}
+.item span{color:var(--sub);font-size:13px}
+.sw{width:50px;height:30px;border-radius:15px;background:var(--line);position:relative;flex:none;transition:background .15s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .15s}
+.sw.on{background:var(--go)}.sw.on::after{left:23px}
+.ver{text-align:center;color:var(--sub);font-size:11px;margin-top:16px}
+
+/* ---------- modal / toast ---------- */
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50;padding:24px}
+#modal.on{display:flex}
+#modal .box{background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:20px;max-width:340px;width:100%}
+#modal h3{margin:0 0 8px;font-size:18px}
+#modal p{margin:0 0 14px;color:var(--sub);font-size:14px;line-height:1.6;white-space:pre-line}
+#modal .row{display:flex;gap:8px}#modal .row .btn{margin:0}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 90px);transform:translateX(-50%);background:var(--ink);color:var(--bg);
+  padding:10px 16px;border-radius:999px;font-size:14px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60;white-space:nowrap}
+#toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ===== HOME ===== -->
+<section class="screen bannered on" id="home">
+  <div class="logo"><span class="mk"><span class="dot"></span>ぽちっと反射神経</span></div>
+  <div class="tag">0.1秒を競え。あなたの反射神経は何歳？</div>
+  <div class="agecard" id="ageCard"></div>
+  <button class="mode" data-mode="simple"><div class="ic simple"><img src="img/mode_simple.png" alt=""></div><div><div class="t">反応速度テスト</div><div class="d">緑になった瞬間にタップ。<br>5回の平均で判定</div></div><div class="best" id="best-simple"></div></button>
+  <button class="mode" data-mode="gonogo"><div class="ic gonogo"><img src="img/mode_gonogo.png" alt=""></div><div><div class="t">押すな判定</div><div class="d">緑は押せ、赤は押すな。<br>速さと判断力を同時に</div></div><div class="best" id="best-gonogo"></div></button>
+  <button class="mode" data-mode="color"><div class="ic color"><img src="img/mode_color.png" alt=""></div><div><div class="t">色ことばテスト</div><div class="d">文字の「色」を選べ。<br>脳がだまされる20問</div></div><div class="best" id="best-color"></div></button>
+  <button class="mode" data-mode="numbers"><div class="ic numbers"><img src="img/mode_numbers.png" alt=""></div><div><div class="t">数字タッチ</div><div class="d">1から25まで順番にタッチ。<br>視野の広さと集中力</div></div><div class="best" id="best-numbers"></div></button>
+  <div class="navrow"><button class="btn ghost" id="bRecords">📈 記録・バッジ</button><button class="btn ghost" id="bSettings">⚙️ 設定</button></div>
+  <div class="streak" id="streak"></div>
+</section>
+
+<!-- ===== PLAY ===== -->
+<section class="screen" id="play">
+  <div id="pad"></div>
+  <div class="ptop"><button class="x" id="bQuit" aria-label="やめる">✕</button><div class="prog" id="prog"></div></div>
+</section>
+
+<!-- ===== RESULT ===== -->
+<section class="screen bannered" id="result">
+  <div class="rmode" id="rMode"></div>
+  <div class="rval" id="rVal"></div>
+  <div id="rNew"></div>
+  <div class="rank" id="rRank"></div>
+  <div class="stats" id="rStats"></div>
+  <div class="trials" id="rTrials"></div>
+  <div class="badgepop" id="rBadge"></div>
+  <div class="note" id="rNote"></div>
+  <button class="btn" id="bAgain">もう一度</button>
+  <div class="navrow"><button class="btn blue" id="bShare">結果をシェア</button><button class="btn ghost" id="bHome">ホーム</button></div>
+</section>
+
+<!-- ===== RECORDS ===== -->
+<section class="screen bannered" id="records">
+  <div class="hdr"><button class="back" data-back>←</button><h2>記録・バッジ</h2></div>
+  <div class="tabs" id="recTabs"></div>
+  <div class="chart" id="chart"></div>
+  <div class="stats" id="recStats"></div>
+  <div class="sec">バッジ</div>
+  <div class="badges" id="badges"></div>
+</section>
+
+<!-- ===== SETTINGS ===== -->
+<section class="screen bannered" id="settings">
+  <div class="hdr"><button class="back" data-back>←</button><h2>設定</h2></div>
+  <div class="list">
+    <div class="item" id="swSound">効果音<div class="sw"></div></div>
+    <div class="item" id="swHaptic">振動（対応機種のみ）<div class="sw"></div></div>
+  </div>
+  <div class="sec">広告なし</div>
+  <div class="list">
+    <div class="item" id="bBuy">広告を削除する <span id="buyLabel">¥300（買い切り）</span></div>
+    <div class="item" id="bRestore">購入を復元</div>
+  </div>
+  <div class="sec">pochitto games の他のアプリ</div>
+  <div class="list" id="otherApps"></div>
+  <div class="sec">その他</div>
+  <div class="list">
+    <div class="item" id="bReset">記録をリセット</div>
+    <a class="item" href="https://pochitto356.github.io/pochittoreflex-privacy.html" target="_blank" rel="noopener">プライバシーポリシー <span>›</span></a>
+  </div>
+  <div class="note" style="margin-top:14px">測定値は端末の画面やタッチの遅延を含みます。順位・年齢は一般的な傾向をもとにした目安で、医学的な検査ではありません。</div>
+  <div class="ver">ぽちっと反射神経 v1.0 / pochitto games</div>
+</section>
+
+</div>
+<div id="modal"><div class="box"><h3 id="mTitle"></h3><p id="mBody"></p><div class="row" id="mRow"></div></div></div>
+<div id="toast"></div>
+
+<script src="native.js"></script>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const now=()=>performance.now();
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ---------- 保存データ ---------- */
+const KEY='pr_save_v1';
+const DEF={sound:true,haptic:true,best:{},hist:{simple:[],gonogo:[],color:[],numbers:[]},plays:0,badges:{},
+  lastDay:'',streak:0,lastAge:null,bestTrial:null,doneSinceAd:0};
+let S;
+try{S=Object.assign({},DEF,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){S=Object.assign({},DEF);}
+S.hist=Object.assign({simple:[],gonogo:[],color:[],numbers:[]},S.hist||{});
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+
+/* ---------- モード定義 ----------
+ * mean/sd: スマホのタッチ操作を前提にした目安の分布。上位%の計算に使う(正規分布近似)。
+ * 値が小さいほど良い(全モード共通)。                                              */
+const MODES={
+  simple:{name:'反応速度テスト',unit:'ms',mean:300,sd:45,icon:'⚡',cls:'simple'},
+  gonogo:{name:'押すな判定',unit:'ms',mean:420,sd:70,icon:'✋',cls:'gonogo'},
+  color:{name:'色ことばテスト',unit:'ms',mean:900,sd:170,icon:'色',cls:'color'},
+  numbers:{name:'数字タッチ',unit:'秒',mean:21,sd:4.5,icon:'25',cls:'numbers'},
+};
+const fmt=(m,v)=>m==='numbers'?v.toFixed(2):String(Math.round(v));
+
+function erf(x){const s=Math.sign(x);x=Math.abs(x);const t=1/(1+.3275911*x);
+  const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x);return s*y;}
+function topPct(m,v){const M=MODES[m];const p=.5*(1+erf((v-M.mean)/(M.sd*Math.SQRT2)));return clamp(p*100,.1,99.9);}
+const pctTxt=p=>p<1?p.toFixed(1):String(Math.round(p));
+function rankOf(p){
+  if(p<=2)return{g:'SS',t:'人間やめてる'};
+  if(p<=10)return{g:'S',t:'アスリート級'};
+  if(p<=30)return{g:'A',t:'かなり速い'};
+  if(p<=60)return{g:'B',t:'ふつう'};
+  if(p<=85)return{g:'C',t:'ちょっと遅め'};
+  return{g:'D',t:'おねむ'};
+}
+// 反射神経年齢(お遊び): 平均反応速度から換算
+function ageOf(ms){return Math.round(clamp(20+(ms-250)/2.5,8,80));}
+function ageLabel(a){return a<=9?'1ケタ':a<20?'10代':a<30?'20代':a<40?'30代':a<50?'40代':a<60?'50代':a<70?'60代':'70代以上';}
+
+/* ---------- 効果音 / 振動 ---------- */
+let AC=null;
+function beep(f,d,type,vol){if(!S.sound)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+  if(AC.state==='suspended')AC.resume();const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;
+  g.gain.setValueAtTime(vol||.12,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);
+  o.connect(g).connect(AC.destination);o.start();o.stop(AC.currentTime+d);}catch(e){}}
+const sfx={tap:()=>beep(660,.06,'triangle',.08),ok:()=>beep(880,.09,'sine'),ng:()=>beep(160,.22,'square',.07),
+  fly:()=>beep(220,.25,'sawtooth',.06),fin:()=>{beep(660,.1);setTimeout(()=>beep(990,.16),110);}};
+function buzz(kind){if(S.haptic)Native.haptic(kind);}
+
+/* ---------- UI共通 ---------- */
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));updateBanner();}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),1800);}
+function modal(title,body,ok,cancel,okLabel){
+  $('mTitle').textContent=title;$('mBody').textContent=body||'';const row=$('mRow');row.innerHTML='';
+  if(cancel){const c=document.createElement('button');c.className='btn ghost';c.textContent='キャンセル';c.onclick=()=>{$('modal').classList.remove('on');cancel();};row.appendChild(c);}
+  const b=document.createElement('button');b.className='btn';b.textContent=okLabel||'OK';b.onclick=()=>{$('modal').classList.remove('on');ok&&ok();};row.appendChild(b);
+  $('modal').classList.add('on');
+}
+window.modal=modal;
+function today(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+
+/* ---------- HOME ---------- */
+function renderHome(){
+  const a=S.lastAge;
+  $('ageCard').innerHTML=a==null
+    ? `<div><div class="l">あなたの反射神経年齢</div><div class="v">？<small>歳</small></div></div><div class="r">反応速度テストで<br>測定しよう</div>`
+    : `<div><div class="l">あなたの反射神経年齢</div><div class="v">${a}<small>歳</small></div></div><div class="r">プレイ回数 <b>${S.plays}</b><br>ベスト <b>${S.best.simple!=null?Math.round(S.best.simple)+'ms':'—'}</b></div>`;
+  for(const m in MODES){const b=S.best[m];$('best-'+m).innerHTML=b==null?'未プレイ':`ベスト<b>${fmt(m,b)}${MODES[m].unit}</b>`;}
+  $('streak').innerHTML=S.streak>1?`🔥 <b>${S.streak}日連続</b>でプレイ中`:'毎日測って、反射神経の変化をチェック';
+  show('home');
+}
+document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>{sfx.tap();startMode(b.dataset.mode);});
+$('bRecords').onclick=()=>{sfx.tap();openRecords();};
+$('bSettings').onclick=()=>{sfx.tap();renderSettings();show('settings');};
+document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>{sfx.tap();renderHome();});
+
+/* =========================================================
+ *  PLAY
+ * ========================================================= */
+const pad=$('pad');
+let G=null;          // 現在のゲーム状態
+let timers=[];
+function later(fn,ms){const t=setTimeout(fn,ms);timers.push(t);return t;}
+function clearTimers(){timers.forEach(clearTimeout);timers=[];if(G&&G.raf)cancelAnimationFrame(G.raf);}
+function setPad(cls,html){pad.className=cls||'';pad.innerHTML=html||'';}
+function setProg(t){$('prog').textContent=t||'';$('prog').style.visibility=t?'visible':'hidden';}
+
+/* 刺激が「画面に出た時刻」を取る。
+ * 状態を変えた直後の requestAnimationFrame はその変更が描画されるフレームの開始時刻。 */
+function markShown(cb){G.raf=requestAnimationFrame(t=>{cb(t);});}
+/* タップ時刻: event.timeStamp は performance.now() と同じ基準(高精度)。おかしければ現在時刻 */
+function tapTime(e){const t=e&&e.timeStamp,n=now();return(t&&t>n-1000&&t<=n+1)?t:n;}
+
+$('bQuit').onclick=e=>{e.stopPropagation();sfx.tap();clearTimers();G=null;renderHome();};
+pad.addEventListener('pointerdown',e=>{e.preventDefault();if(G&&G.onPad)G.onPad(e);},{passive:false});
+
+function startMode(m){
+  clearTimers();
+  G={mode:m};
+  show('play');setProg('');
+  const M=MODES[m];
+  const texts={
+    simple:['反応速度テスト','画面が<b style="color:var(--go)">緑</b>に変わった瞬間に、どこでもいいのでタップ。<br>赤のうちに押すとフライング。5回の平均で判定します。'],
+    gonogo:['押すな判定','<b style="color:var(--go)">緑の「押せ」</b>はすぐタップ。<br><b style="color:var(--stop)">赤の「押すな」</b>は絶対に押さない。<br>12問。ミス1回につき+100msのペナルティ。'],
+    color:['色ことばテスト','「あか」「あお」などの文字が出ます。<br>文字の<b>意味ではなく、文字の色</b>のボタンを押してください。<br>20問。ミス1回につき+300msのペナルティ。'],
+    numbers:['数字タッチ','1から25まで、順番にできるだけ速くタッチ。<br>まちがえると+1秒。'],
+  }[m];
+  setPad('neutral',`<div class="howto"><div class="ic ${M.cls}"><img src="img/mode_${m}.png" alt="" style="width:64px;height:64px"></div><h2>${texts[0]}</h2><p>${texts[1]}</p><button class="btn" id="bStart">スタート</button></div>`);
+  G.onPad=null;
+  $('bStart').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();sfx.tap();
+    ({simple:simpleStart,gonogo:gngStart,color:colorStart,numbers:numStart})[m]();},{passive:false});
+}
+
+/* ---------- 1. 反応速度テスト ---------- */
+const SIMPLE_N=5;
+function simpleStart(){Object.assign(G,{rts:[],fly:0});simpleWait();}
+function dots(n,done){let h='<div class="dots">';for(let i=0;i<n;i++)h+=`<i class="${i<done?'on':''}"></i>`;return h+'</div>';}
+function simpleWait(){
+  setProg(`${G.rts.length+1} / ${SIMPLE_N}`);
+  G.state='wait';
+  setPad('wait',`<div class="big">待って…</div><div class="hint">緑になったらタップ</div>${dots(SIMPLE_N,G.rts.length)}`);
+  later(()=>{
+    if(!G||G.state!=='wait')return;
+    G.state='go';G.goT=null;
+    setPad('go',`<div class="big">タップ！</div>`);
+    markShown(t=>{if(G)G.goT=t;});
+  },rnd(1400,4200));
+  G.onPad=simplePad;
+}
+function simplePad(e){
+  const t=tapTime(e);
+  if(G.state==='wait'){
+    clearTimers();G.fly++;G.state='fly';sfx.fly();buzz('heavy');
+    setPad('fly',`<div class="big">フライング！</div><div class="hint">緑になるまで待ってね<br>タップでやり直し</div>`);
+    G.onPad=()=>{if(G.state==='fly')simpleWait();};
+    return;
+  }
+  if(G.state==='go'){
+    const go=G.goT!=null?G.goT:t;
+    const rt=t-go;
+    if(rt<100){ // 人間の反応としては速すぎる=見込み押し
+      clearTimers();G.fly++;G.state='fly';sfx.fly();
+      setPad('fly',`<div class="big">見込み押し！</div><div class="hint">100ms未満は予測で押したとみなします<br>タップでやり直し</div>`);
+      G.onPad=()=>{if(G.state==='fly')simpleWait();};return;
+    }
+    G.rts.push(rt);G.state='show';sfx.ok();buzz('light');
+    const last=G.rts.length>=SIMPLE_N;
+    setPad('show',`<div class="huge">${Math.round(rt)}<small>ms</small></div><div class="hint">${last?'タップで結果へ':'タップで次へ'}</div>${dots(SIMPLE_N,G.rts.length)}`);
+    G.onPad=null;
+    later(()=>{G.onPad=()=>{if(G.state!=='show')return;last?simpleEnd():simpleWait();};},350);
+  }
+}
+function simpleEnd(){
+  const avg=G.rts.reduce((a,b)=>a+b,0)/G.rts.length;
+  const best=Math.min(...G.rts);
+  finish('simple',avg,{
+    stats:[['ベスト',Math.round(best)+'ms'],['フライング',G.fly+'回']],
+    trials:G.rts.map(v=>({v:Math.round(v),best:v===best})),
+    bestTrial:best,
+  });
+}
+
+/* ---------- 2. 押すな判定 (Go/No-Go) ---------- */
+const GNG_N=12,GNG_NOGO=4,GNG_LIMIT=1000,GNG_PEN=100;
+function gngStart(){
+  const seq=shuffle(Array(GNG_N-GNG_NOGO).fill('go').concat(Array(GNG_NOGO).fill('stop')));
+  if(seq[0]==='stop'){const i=seq.indexOf('go');[seq[0],seq[i]]=[seq[i],seq[0]];} // 1問目は押せ
+  Object.assign(G,{seq,i:0,rts:[],err:0,log:[]});gngNext();
+}
+function gngNext(){
+  if(G.i>=G.seq.length){gngEnd();return;}
+  setProg(`${G.i+1} / ${GNG_N}`);
+  G.state='wait';
+  setPad('neutral',`<div class="sig" style="background:var(--card);box-shadow:none;color:var(--sub);font-size:22px">…</div><div class="fb" id="fb"></div>`);
+  G.onPad=gngPad;
+  later(()=>{
+    if(!G||G.state!=='wait')return;
+    const k=G.seq[G.i];G.state=k;G.goT=null;
+    setPad('neutral',k==='go'
+      ?`<div class="sig go"><div class="mk">●</div>押せ！</div><div class="fb" id="fb"></div>`
+      :`<div class="sig stop"><div class="mk">✕</div>押すな！</div><div class="fb" id="fb"></div>`);
+    markShown(t=>{if(G)G.goT=t;});
+    later(()=>gngTimeout(k),GNG_LIMIT);
+  },rnd(700,1800));
+}
+function gngFb(t,ok){const f=$('fb');if(f){f.textContent=t;f.className='fb '+(ok?'ok':'ng');}}
+function gngAdvance(ms){G.state='between';G.i++;later(gngNext,ms);}
+function gngTimeout(k){
+  if(!G||G.state!==k)return;
+  if(k==='go'){G.err++;G.log.push({v:'遅い',err:true});sfx.ng();gngFb('遅い！',false);}
+  else{G.log.push({v:'○',err:false});sfx.ok();gngFb('よく我慢した！',true);}
+  gngAdvance(650);
+}
+function gngPad(e){
+  const t=tapTime(e);
+  if(G.state==='wait'){clearTimers();G.err++;G.log.push({v:'フライング',err:true});sfx.fly();buzz('heavy');gngFb('フライング！',false);gngAdvance(800);return;}
+  if(G.state==='go'){
+    clearTimers();const rt=t-(G.goT!=null?G.goT:t);
+    if(rt<100){G.err++;G.log.push({v:'見込み',err:true});sfx.fly();gngFb('見込み押し！',false);gngAdvance(800);return;}
+    G.rts.push(rt);G.log.push({v:Math.round(rt),err:false});sfx.ok();buzz('light');gngFb(Math.round(rt)+'ms',true);gngAdvance(550);return;
+  }
+  if(G.state==='stop'){clearTimers();G.err++;G.log.push({v:'押した',err:true});sfx.ng();buzz('heavy');gngFb('押しちゃった！',false);gngAdvance(800);}
+}
+function gngEnd(){
+  const avg=G.rts.length?G.rts.reduce((a,b)=>a+b,0)/G.rts.length:GNG_LIMIT;
+  const score=avg+G.err*GNG_PEN;
+  finish('gonogo',score,{
+    stats:[['平均反応',Math.round(avg)+'ms'],['ミス',G.err+'回（+'+G.err*GNG_PEN+'ms）']],
+    trials:G.log.map(x=>({v:x.v,err:x.err})),
+    perfect:G.err===0,
+  });
+}
+
+/* ---------- 3. 色ことばテスト (ストループ) ---------- */
+const COLORS=[{k:'red',w:'あか',c:'#ff4b55'},{k:'blue',w:'あお',c:'#3d8bff'},{k:'green',w:'みどり',c:'#22d07a'},{k:'yellow',w:'きいろ',c:'#ffc61a'}];
+const COLOR_N=20,COLOR_PEN=300,COLOR_LIMIT=3000;
+function colorStart(){
+  Object.assign(G,{i:0,rts:[],err:0,log:[]});
+  // ボタン配置はゲーム中固定(毎回変えると探す時間を測ることになる)
+  G.order=shuffle(COLORS.slice());
+  colorNext();
+}
+function colorNext(){
+  if(G.i>=COLOR_N){colorEnd();return;}
+  setProg(`${G.i+1} / ${COLOR_N}`);
+  // 3/4 は文字と色が不一致(ここが難しい)
+  const word=COLORS[Math.floor(Math.random()*4)];
+  let ink=word;
+  if(Math.random()<.75){const others=COLORS.filter(c=>c!==word);ink=others[Math.floor(Math.random()*3)];}
+  G.cur={word,ink};G.state='wait';
+  const btns=G.order.map(c=>`<button data-k="${c.k}" style="background:${c.c};${c.k==='yellow'?'color:#3a2a00':''}">${c.w}</button>`).join('');
+  setPad('neutral',`<div class="cbar"><i id="cbar"></i></div><div class="cword" id="cword"></div><div class="cbtns" id="cbtns">${btns}</div><div class="fb" id="fb"></div>`);
+  G.onPad=null;
+  pad.querySelectorAll('#cbtns button').forEach(b=>b.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();colorPick(b.dataset.k,ev);},{passive:false}));
+  later(()=>{
+    if(!G||G.state!=='wait')return;
+    const w=$('cword');w.textContent=word.w;w.style.color=ink.c;G.state='go';G.goT=null;
+    markShown(t=>{if(G)G.goT=t;});
+    const bar=$('cbar');bar.style.transition=`width ${COLOR_LIMIT}ms linear`;requestAnimationFrame(()=>requestAnimationFrame(()=>{bar.style.width='0%';}));
+    later(()=>{if(G&&G.state==='go'){G.state='done';G.err++;G.log.push({v:'遅い',err:true});sfx.ng();gngFb('時間切れ',false);G.i++;later(colorNext,600);}},COLOR_LIMIT);
+  },rnd(450,900));
+}
+function colorPick(k,e){
+  if(!G)return;
+  if(G.state==='wait'){return;} // 文字が出る前のタップは無視
+  if(G.state!=='go')return;
+  const t=tapTime(e);clearTimers();G.state='done';
+  const rt=t-(G.goT!=null?G.goT:t);
+  if(k===G.cur.ink.k){G.rts.push(rt);G.log.push({v:Math.round(rt),err:false});sfx.ok();buzz('light');gngFb(Math.round(rt)+'ms',true);}
+  else{G.err++;G.log.push({v:'×',err:true});sfx.ng();buzz('heavy');gngFb(k===G.cur.word.k?'文字に釣られた！':'ちがう色',false);}
+  G.i++;later(colorNext,500);
+}
+function colorEnd(){
+  const avg=G.rts.length?G.rts.reduce((a,b)=>a+b,0)/G.rts.length:COLOR_LIMIT;
+  const score=avg+G.err*COLOR_PEN;
+  finish('color',score,{
+    stats:[['平均反応',Math.round(avg)+'ms'],['ミス',G.err+'回（+'+G.err*COLOR_PEN+'ms）']],
+    trials:G.log.map(x=>({v:x.v,err:x.err})),
+    perfect:G.err===0,
+  });
+}
+
+/* ---------- 4. 数字タッチ ---------- */
+function numStart(){
+  Object.assign(G,{next:1,miss:0,t0:null});
+  const nums=shuffle([...Array(25)].map((_,i)=>i+1));
+  setProg('');
+  let n=3;
+  const cd=()=>{
+    if(!G)return;
+    if(n>0){setPad('neutral',`<div class="huge">${n}</div>`);sfx.tap();n--;later(cd,650);return;}
+    setPad('neutral',`<div class="ntop" id="ntime">0.00</div><div class="nnext">次は <b id="nnext">1</b></div><div class="grid" id="grid">${nums.map(v=>`<button data-v="${v}">${v}</button>`).join('')}</div>`);
+    pad.querySelectorAll('#grid button').forEach(b=>b.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();numTap(b,ev);},{passive:false}));
+    G.state='go';
+    markShown(t=>{if(!G)return;G.t0=t;const tick=()=>{if(!G||G.state!=='go')return;$('ntime').textContent=((now()-G.t0)/1000+G.miss).toFixed(2);G.raf=requestAnimationFrame(tick);};tick();});
+  };
+  cd();
+}
+function numTap(b,e){
+  if(!G||G.state!=='go'||G.t0==null)return;
+  const v=+b.dataset.v;
+  if(v===G.next){
+    b.classList.add('done');G.next++;beep(500+G.next*18,.05,'triangle',.07);
+    if(G.next>25){const t=tapTime(e);G.state='end';cancelAnimationFrame(G.raf);
+      const sec=(t-G.t0)/1000+G.miss;$('ntime').textContent=sec.toFixed(2);
+      later(()=>finish('numbers',sec,{stats:[['タイム',((t-G.t0)/1000).toFixed(2)+'秒'],['ミス',G.miss+'回（+'+G.miss+'秒）']],trials:[]}),350);
+      return;}
+    $('nnext').textContent=G.next;
+  }else if(!b.classList.contains('done')){
+    G.miss++;sfx.ng();buzz('heavy');b.classList.add('bad');setTimeout(()=>b.classList.remove('bad'),250);
+  }
+}
+
+/* =========================================================
+ *  RESULT
+ * ========================================================= */
+const BADGES=[
+  {id:'first',e:'🎉',n:'はじめの一歩',c:'はじめて測定した'},
+  {id:'250',e:'⚡',n:'250ms切り',c:'反応速度の平均が250ms未満'},
+  {id:'200',e:'🚀',n:'200ms切り',c:'反応速度で1回でも200ms未満'},
+  {id:'teen',e:'🧒',n:'反射神経10代',c:'反射神経年齢が10代以下'},
+  {id:'gaman',e:'✋',n:'鉄の我慢',c:'押すな判定をノーミス'},
+  {id:'stroop',e:'🎨',n:'色に強い',c:'色ことばテストをノーミス'},
+  {id:'num15',e:'🔢',n:'15秒の壁',c:'数字タッチ15秒未満'},
+  {id:'all',e:'🏅',n:'全種目制覇',c:'4つのテストを全部プレイ'},
+  {id:'streak3',e:'🔥',n:'3日連続',c:'3日続けてプレイ'},
+  {id:'streak7',e:'📅',n:'1週間連続',c:'7日続けてプレイ'},
+  {id:'30',e:'💪',n:'30回測定',c:'合計30回プレイ'},
+  {id:'ss',e:'👑',n:'SSランク',c:'どれかでSSランク'},
+];
+let last=null;
+function finish(m,v,extra){
+  clearTimers();G=null;sfx.fin();buzz('success');
+  const M=MODES[m];
+  const prev=S.best[m];
+  const isNew=prev==null||v<prev;
+  if(isNew)S.best[m]=v;
+  S.hist[m].push({v:+v.toFixed(m==='numbers'?2:0),d:Date.now()});
+  if(S.hist[m].length>60)S.hist[m].shift();
+  S.plays++;S.doneSinceAd++;
+  // 連続日数
+  const td=today();
+  if(S.lastDay!==td){const y=new Date();y.setDate(y.getDate()-1);
+    const yd=y.getFullYear()+'-'+(y.getMonth()+1)+'-'+y.getDate();
+    S.streak=S.lastDay===yd?S.streak+1:1;S.lastDay=td;}
+  const p=topPct(m,v),r=rankOf(p);
+  let age=null;
+  if(m==='simple'){age=ageOf(v);S.lastAge=age;if(extra.bestTrial!=null)S.bestTrial=Math.min(S.bestTrial??9999,extra.bestTrial);}
+  // バッジ
+  const got=[];const give=id=>{if(!S.badges[id]){S.badges[id]=Date.now();got.push(id);}};
+  give('first');
+  if(m==='simple'&&v<250)give('250');
+  if(m==='simple'&&extra.bestTrial<200)give('200');
+  if(age!=null&&age<20)give('teen');
+  if(m==='gonogo'&&extra.perfect)give('gaman');
+  if(m==='color'&&extra.perfect)give('stroop');
+  if(m==='numbers'&&v<15)give('num15');
+  if(Object.keys(MODES).every(k=>S.hist[k].length))give('all');
+  if(S.streak>=3)give('streak3');
+  if(S.streak>=7)give('streak7');
+  if(S.plays>=30)give('30');
+  if(r.g==='SS')give('ss');
+  save();
+
+  last={m,v,p,r,age};
+  $('rMode').textContent=M.name+' の結果';
+  $('rVal').innerHTML=`${fmt(m,v)}<small>${M.unit}</small>`;
+  $('rNew').innerHTML=isNew&&prev!=null?'<span class="newrec">自己ベスト更新！</span>':(prev==null?'<span class="newrec">初記録</span>':'');
+  $('rRank').innerHTML=`<div class="g g${r.g}">${r.g}</div><div><div class="tt">${r.t}</div><div class="pc">上位 ${pctTxt(p)}%（目安）</div></div>`;
+  const st=extra.stats.slice();
+  if(age!=null)st.unshift(['反射神経年齢',age+'歳（'+ageLabel(age)+'）']);
+  st.push(['自己ベスト',fmt(m,S.best[m])+M.unit]);
+  $('rStats').innerHTML=st.map(([a,b])=>`<div><span>${a}</span><b style="${b.length>6?'font-size:16px':''}">${b}</b></div>`).join('');
+  $('rTrials').innerHTML=(extra.trials||[]).map(x=>`<span class="${x.best?'best':''}${x.err?'err':''}">${x.v}</span>`).join('');
+  $('rBadge').textContent=got.length?'🏅 バッジ獲得: '+got.map(id=>BADGES.find(b=>b.id===id).n).join('、'):'';
+  $('rNote').textContent=m==='simple'?'反射神経年齢・順位はお遊びの目安です。画面やタッチの遅延も含みます。':'順位は目安です。';
+  show('result');
+  // レビュー依頼: 自己ベストを更新した気分の良いタイミングで(OS側で年3回まで)
+  if(isNew&&prev!=null&&S.plays>=5)Native.requestReview();
+}
+function adThen(fn){
+  // 3回測定ごとにインタースティシャル(初回起動〜5回目までは出さない)
+  if(S.plays>=5&&S.doneSinceAd>=3){S.doneSinceAd=0;save();Native.interstitial(fn);}else fn();
+}
+$('bAgain').onclick=()=>{sfx.tap();const m=last.m;adThen(()=>startMode(m));};
+$('bHome').onclick=()=>{sfx.tap();adThen(renderHome);};
+$('bShare').onclick=()=>{
+  sfx.tap();if(!last)return;
+  const M=MODES[last.m];
+  let t=`【ぽちっと反射神経】${M.name}：${fmt(last.m,last.v)}${M.unit}（${last.r.g}ランク・上位${pctTxt(last.p)}%）`;
+  if(last.age!=null)t+=`\n反射神経年齢は ${last.age}歳 でした`;
+  t+='\nあなたは何'+M.unit+'？ #ぽちっと反射神経';
+  Native.share(t);
+};
+
+/* =========================================================
+ *  RECORDS
+ * ========================================================= */
+let recMode='simple';
+function openRecords(){renderRecords();show('records');}
+function renderRecords(){
+  $('recTabs').innerHTML=Object.keys(MODES).map(k=>`<button class="${k===recMode?'on':''}" data-k="${k}">${MODES[k].name}</button>`).join('');
+  $('recTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{recMode=b.dataset.k;renderRecords();});
+  const h=S.hist[recMode].slice(-20),M=MODES[recMode];
+  if(h.length<2){$('chart').innerHTML=`<div class="empty">${h.length?'あと1回測るとグラフが出ます':'まだ記録がありません'}</div>`;}
+  else{
+    const W=320,H=150,P=24,vs=h.map(x=>x.v);
+    let lo=Math.min(...vs),hi=Math.max(...vs);if(hi-lo<1e-6){hi+=1;lo-=1;}const pad_=(hi-lo)*.15;lo-=pad_;hi+=pad_;
+    const X=i=>P+(W-P-8)*i/(h.length-1),Y=v=>8+(H-30)*(v-lo)/(hi-lo); // 小さい値(=速い)ほど上に描く
+    const pts=vs.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+    const bi=vs.indexOf(Math.min(...vs));
+    $('chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      <line x1="${P}" y1="${H-20}" x2="${W-8}" y2="${H-20}" stroke="#2a3552"/>
+      <text x="2" y="14" fill="#8e9ab5" font-size="10">速い</text><text x="2" y="${H-24}" fill="#8e9ab5" font-size="10">遅い</text>
+      <polyline points="${pts}" fill="none" stroke="#22d07a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      ${vs.map((v,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${i===bi?4.5:2.5}" fill="${i===bi?'#ffd166':'#22d07a'}"/>`).join('')}
+      <text x="${W-8}" y="${H-5}" fill="#8e9ab5" font-size="10" text-anchor="end">直近${h.length}回</text>
+    </svg>`;
+  }
+  const all=S.hist[recMode].map(x=>x.v);
+  const avg=all.length?all.reduce((a,b)=>a+b,0)/all.length:null;
+  $('recStats').innerHTML=[
+    ['自己ベスト',S.best[recMode]!=null?fmt(recMode,S.best[recMode])+M.unit:'—'],
+    ['平均（直近'+all.length+'回）',avg!=null?fmt(recMode,avg)+M.unit:'—'],
+    ['プレイ回数',all.length+'回'],
+    [recMode==='simple'?'1回のベスト':'ランク',recMode==='simple'?(S.bestTrial!=null?Math.round(S.bestTrial)+'ms':'—'):(S.best[recMode]!=null?rankOf(topPct(recMode,S.best[recMode])).g:'—')],
+  ].map(([a,b])=>`<div><span>${a}</span><b>${b}</b></div>`).join('');
+  $('badges').innerHTML=BADGES.map(b=>`<div class="badge ${S.badges[b.id]?'got':''}"><div class="e"><img src="img/badge_${b.id}.png" alt=""></div><div class="n">${b.n}</div><div class="c">${b.c}</div></div>`).join('');
+}
+
+/* =========================================================
+ *  SETTINGS
+ * ========================================================= */
+const OTHER_APPS=[
+  {n:'押すな！ボタン',d:'押してはいけないボタンを避けるバカゲー',id:'6793996412'},
+  {n:'GRID HUNTER',d:'全方位アーケードシューティング',id:'6806726004'},
+  {n:'ぽちっと漢字',d:'まんなかの漢字を当てる毎日3問',id:'6811293101'},
+];
+function renderSettings(){
+  $('swSound').querySelector('.sw').classList.toggle('on',S.sound);
+  $('swHaptic').querySelector('.sw').classList.toggle('on',S.haptic);
+  const p=Native.isPremium();
+  $('buyLabel').textContent=p?'購入済み':'¥300（買い切り）';
+  $('otherApps').innerHTML=OTHER_APPS.map(a=>`<a class="item" href="https://apps.apple.com/jp/app/id${a.id}" target="_blank" rel="noopener"><div>${a.n}<br><span>${a.d}</span></div><span>›</span></a>`).join('');
+}
+$('swSound').onclick=()=>{S.sound=!S.sound;save();renderSettings();sfx.tap();};
+$('swHaptic').onclick=()=>{S.haptic=!S.haptic;save();renderSettings();buzz('light');};
+$('bBuy').onclick=()=>{sfx.tap();if(!Native.isPremium())Native.buyPremium();};
+$('bRestore').onclick=()=>{sfx.tap();Native.restore();};
+$('bReset').onclick=()=>{modal('記録をリセット','すべての記録とバッジを消します。元に戻せません。',()=>{
+  const keep={sound:S.sound,haptic:S.haptic};S=Object.assign(JSON.parse(JSON.stringify(DEF)),keep);save();toast('リセットしました');renderSettings();},()=>{},'リセット');};
+
+/* ---------- 広告・課金 ---------- */
+window.onPremiumChanged=v=>{applyPremium();if(v)toast('広告を削除しました。ありがとうございます！');};
+function applyPremium(){document.body.classList.toggle('has-banner',!Native.isPremium()&&Native.isApp);if($('settings').classList.contains('on'))renderSettings();updateBanner();}
+function updateBanner(){
+  // テスト中は絶対に出さない(誤タップ防止と、測定への影響をなくすため)
+  const on=document.querySelector('.screen.on');
+  Native.banner(!!on&&on.classList.contains('bannered')&&!Native.isPremium());
+}
+
+renderHome();
+Native.init().then(()=>{applyPremium();});
+</script>
+</body>
+</html>
