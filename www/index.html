@@ -16,6 +16,11 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--font);overscroll-behavior:none;overflow:hidden}
+html[data-pad=wait],html[data-pad=wait] body{background:var(--wait)}
+html[data-pad=go],html[data-pad=go] body{background:var(--go)}
+html[data-pad=fly],html[data-pad=fly] body{background:var(--amber)}
+html[data-pad=show],html[data-pad=show] body{background:var(--blue)}
+html[data-pad=neutral],html[data-pad=neutral] body{background:var(--bg2)}
 #app{position:fixed;inset:0;max-width:520px;margin:0 auto}
 @media (min-width:700px){#app{zoom:1.45}}
 .screen{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;
@@ -304,7 +309,7 @@ const sfx={tap:()=>beep(660,.06,'triangle',.08),ok:()=>beep(880,.09,'sine'),ng:(
 function buzz(kind){if(S.haptic)Native.haptic(kind);}
 
 /* ---------- UI共通 ---------- */
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));updateBanner();}
+function show(id){if(id!=='play')delete document.documentElement.dataset.pad;document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));updateBanner();}
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),1800);}
 function modal(title,body,ok,cancel,okLabel){
   $('mTitle').textContent=title;$('mBody').textContent=body||'';const row=$('mRow');row.innerHTML='';
@@ -338,7 +343,8 @@ let G=null;          // 現在のゲーム状態
 let timers=[];
 function later(fn,ms){const t=setTimeout(fn,ms);timers.push(t);return t;}
 function clearTimers(){timers.forEach(clearTimeout);timers=[];if(G&&G.raf)cancelAnimationFrame(G.raf);}
-function setPad(cls,html){pad.className=cls||'';pad.innerHTML=html||'';}
+// iPadなど#appより画面が広いとき、余白も測定画面と同じ色にする
+function setPad(cls,html){pad.className=cls||'';pad.innerHTML=html||'';document.documentElement.dataset.pad=cls||'neutral';}
 function setProg(t){$('prog').textContent=t||'';$('prog').style.visibility=t?'visible':'hidden';}
 
 /* 刺激が「画面に出た時刻」を取る。
