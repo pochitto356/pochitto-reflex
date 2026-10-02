@@ -26,6 +26,7 @@ html[data-pad=neutral],html[data-pad=neutral] body{background:var(--bg2)}
 .screen{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding:calc(env(safe-area-inset-top) + 14px) 18px calc(env(safe-area-inset-bottom) + 18px)}
 .screen.on{display:flex}
+.screen>*{flex-shrink:0}
 body.has-banner .screen.bannered{padding-bottom:calc(env(safe-area-inset-bottom) + 76px)}
 
 /* ---------- home ---------- */
@@ -677,6 +678,7 @@ const OTHER_APPS=[
   {n:'押すな！ボタン',d:'押してはいけないボタンを避けるバカゲー',id:'6793996412'},
   {n:'GRID HUNTER',d:'全方位アーケードシューティング',id:'6806726004'},
   {n:'ぽちっと漢字',d:'まんなかの漢字を当てる毎日3問',id:'6811293101'},
+  {n:'マッスルフレンド',d:'筋肉を育てるバカゲー',id:'6804350802'},
 ];
 function renderSettings(){
   $('swSound').querySelector('.sw').classList.toggle('on',S.sound);
