@@ -134,9 +134,12 @@
             type: CP.ProductType.NON_CONSUMABLE,
             platform: CP.Platform.APPLE_APPSTORE
           }]);
+          // ★アプリ本体のレシートも approved として流れてくるので、
+          //   購入商品(PRODUCT_ID)を含むものだけを扱う(2026-10-04 支払い前に購入済みになる不具合の修正)
           store.when()
-            .approved(function (t) { t.verify(); })
-            .verified(function (r) { setPremium(true); r.finish(); })
+            .approved(function (t) { if (hasProduct(t)) t.verify(); })
+            .verified(function (r) { r.finish(); syncOwnership(); })
+            .finished(function (t) { if (hasProduct(t)) setPremium(true); })
             .receiptUpdated(function () { syncOwnership(); });
           store.error(function (e) { log('store error', e && e.message); });
           store.initialize([CP.Platform.APPLE_APPSTORE]).then(function () {
@@ -149,12 +152,16 @@
     });
   }
 
+  function hasProduct(t) {
+    try { return !!(t && t.products && t.products.some(function (x) { return x.id === PRODUCT_ID; })); }
+    catch (e) { return false; }
+  }
+
   function syncOwnership() {
     try {
       var CP = window.CdvPurchase;
       if (!CP) return;
-      var p = CP.store.get(PRODUCT_ID, CP.Platform.APPLE_APPSTORE);
-      if (p && p.owned) setPremium(true);
+      if (CP.store.owned(PRODUCT_ID)) setPremium(true);
     } catch (e) {}
   }
 
