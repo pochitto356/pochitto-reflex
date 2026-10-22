@@ -1,7 +1,7 @@
 {
   "name": "pochitto-reflex",
-  "version": "1.0.0",
-  "description": "ぽちっと反射神経 - 反応速度・押すな判定・色ことば・数字タッチの4種目で反射神経年齢を測るアプリ",
+  "version": "1.1.0",
+  "description": "ぽちっと反射神経 - 反射神経4種目＋色彩感覚・記憶力の6種目で「目と脳」を測るアプリ",
   "private": true,
   "scripts": {
     "add:ios": "cap add ios",

@@ -54,6 +54,24 @@ body.has-banner .screen.bannered{padding-bottom:calc(env(safe-area-inset-bottom)
 .ic.gonogo{background:rgba(255,75,85,.15);color:var(--stop)}
 .ic.numbers{background:rgba(61,139,255,.15);color:var(--blue)}
 .ic.color{background:rgba(255,176,32,.15);color:var(--amber)}
+.ic.hue{background:rgba(160,96,255,.15);color:#b48cff}
+.ic.memory{background:rgba(255,200,60,.15);color:#ffd34d}
+.hsec{font-size:12px;color:var(--sub);margin:6px 2px 8px;font-weight:700;letter-spacing:.06em}
+/* hue / memory */
+.tinfo{font-size:13px;color:var(--sub);font-weight:700;margin-bottom:12px;min-height:18px}
+.tinfo b{color:var(--ink);font-family:var(--num);font-size:15px}
+.tinfo.watch{color:#ffd34d}.tinfo.go{color:var(--go)}
+.tgrid{display:grid;gap:7px;width:min(86vw,56vh,400px);aspect-ratio:1;touch-action:none}
+.tgrid i{display:block;border-radius:12px;cursor:pointer}
+.tgrid.n6 i,.tgrid.n7 i,.tgrid.n8 i{border-radius:7px}
+.tgrid.mem i{background:var(--card);border:1px solid var(--line);transition:background .1s,box-shadow .1s}
+.tgrid.mem i.lit{background:#ffd34d;border-color:#ffd34d;box-shadow:0 0 22px rgba(255,211,77,.6)}
+.tgrid.mem i.tap{background:var(--go);border-color:var(--go)}
+.tgrid i.ans{outline:4px solid #fff;outline-offset:-2px}
+.tgrid.mem i.ans{background:transparent;outline:3px dashed #ffd34d}
+.tgrid i.miss{outline:4px solid var(--stop);outline-offset:-2px}
+.tgrid.mem i.miss{background:var(--stop)}
+.hearts{font-size:14px;letter-spacing:2px}
 .navrow{display:flex;gap:10px;margin-top:4px}
 .btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;font-family:inherit;
   color:#062314;background:var(--go);box-shadow:0 4px 0 var(--go-d);cursor:pointer;margin:8px 0}
@@ -187,12 +205,16 @@ body.has-banner .screen.bannered{padding-bottom:calc(env(safe-area-inset-bottom)
 <!-- ===== HOME ===== -->
 <section class="screen bannered on" id="home">
   <div class="logo"><span class="mk"><span class="dot"></span>ぽちっと反射神経</span></div>
-  <div class="tag">0.1秒を競え。あなたの反射神経は何歳？</div>
+  <div class="tag">反射神経・色彩感覚・記憶力。あなたの「目と脳」は何ランク？</div>
   <div class="agecard" id="ageCard"></div>
+  <div class="hsec">反射神経</div>
   <button class="mode" data-mode="simple"><div class="ic simple"><img src="img/mode_simple.png" alt=""></div><div><div class="t">反応速度テスト</div><div class="d">緑になった瞬間にタップ。<br>5回の平均で判定</div></div><div class="best" id="best-simple"></div></button>
   <button class="mode" data-mode="gonogo"><div class="ic gonogo"><img src="img/mode_gonogo.png" alt=""></div><div><div class="t">押すな判定</div><div class="d">緑は押せ、赤は押すな。<br>速さと判断力を同時に</div></div><div class="best" id="best-gonogo"></div></button>
   <button class="mode" data-mode="color"><div class="ic color"><img src="img/mode_color.png" alt=""></div><div><div class="t">色ことばテスト</div><div class="d">文字の「色」を選べ。<br>脳がだまされる20問</div></div><div class="best" id="best-color"></div></button>
   <button class="mode" data-mode="numbers"><div class="ic numbers"><img src="img/mode_numbers.png" alt=""></div><div><div class="t">数字タッチ</div><div class="d">1から25まで順番にタッチ。<br>視野の広さと集中力</div></div><div class="best" id="best-numbers"></div></button>
+  <div class="hsec">目と記憶</div>
+  <button class="mode" data-mode="hue"><div class="ic hue"><img src="img/mode_hue.png" alt=""></div><div><div class="t">色彩感覚テスト <span style="font-size:10px;background:var(--amber);color:#3a2600;border-radius:6px;padding:1px 5px;vertical-align:2px">NEW</span></div><div class="d">1つだけ色がちがうマスを探せ。<br>色の差はどんどん小さくなる</div></div><div class="best" id="best-hue"></div></button>
+  <button class="mode" data-mode="memory"><div class="ic memory"><img src="img/mode_memory.png" alt=""></div><div><div class="t">記憶力テスト <span style="font-size:10px;background:var(--amber);color:#3a2600;border-radius:6px;padding:1px 5px;vertical-align:2px">NEW</span></div><div class="d">光った順番どおりにタップ。<br>1つずつ長くなる</div></div><div class="best" id="best-memory"></div></button>
   <div class="navrow"><button class="btn ghost" id="bRecords">📈 記録・バッジ</button><button class="btn ghost" id="bSettings">⚙️ 設定</button></div>
   <div class="streak" id="streak"></div>
 </section>
@@ -246,8 +268,8 @@ body.has-banner .screen.bannered{padding-bottom:calc(env(safe-area-inset-bottom)
     <div class="item" id="bReset">記録をリセット</div>
     <a class="item" href="https://pochitto356.github.io/pochittoreflex-privacy.html" target="_blank" rel="noopener">プライバシーポリシー <span>›</span></a>
   </div>
-  <div class="note" style="margin-top:14px">測定値は端末の画面やタッチの遅延を含みます。順位・年齢は一般的な傾向をもとにした目安で、医学的な検査ではありません。</div>
-  <div class="ver">ぽちっと反射神経 v1.0 / pochitto games</div>
+  <div class="note" style="margin-top:14px">測定値は端末の画面やタッチの遅延を含みます。順位・年齢は一般的な傾向をもとにした目安で、医学的な検査ではありません。色彩感覚テストは色覚検査ではありません。</div>
+  <div class="ver">ぽちっと反射神経 v1.1 / pochitto games</div>
 </section>
 
 </div>
@@ -265,29 +287,36 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
 /* ---------- 保存データ ---------- */
 const KEY='pr_save_v1';
-const DEF={sound:true,haptic:true,best:{},hist:{simple:[],gonogo:[],color:[],numbers:[]},plays:0,badges:{},
+const DEF={sound:true,haptic:true,best:{},hist:{simple:[],gonogo:[],color:[],numbers:[],hue:[],memory:[]},plays:0,badges:{},
   lastDay:'',streak:0,lastAge:null,bestTrial:null,doneSinceAd:0};
 let S;
 try{S=Object.assign({},DEF,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){S=Object.assign({},DEF);}
-S.hist=Object.assign({simple:[],gonogo:[],color:[],numbers:[]},S.hist||{});
+S.hist=Object.assign({simple:[],gonogo:[],color:[],numbers:[],hue:[],memory:[]},S.hist||{});
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 
 /* ---------- モード定義 ----------
  * mean/sd: スマホのタッチ操作を前提にした目安の分布。上位%の計算に使う(正規分布近似)。
- * 値が小さいほど良い(全モード共通)。                                              */
+ * 値が小さいほど良い。hi:true のモード(色彩感覚・記憶力)だけは値が大きいほど良い。      */
 const MODES={
   simple:{name:'反応速度テスト',unit:'ms',mean:300,sd:45,icon:'⚡',cls:'simple'},
   gonogo:{name:'押すな判定',unit:'ms',mean:420,sd:70,icon:'✋',cls:'gonogo'},
   color:{name:'色ことばテスト',unit:'ms',mean:900,sd:170,icon:'色',cls:'color'},
   numbers:{name:'数字タッチ',unit:'秒',mean:21,sd:4.5,icon:'25',cls:'numbers'},
+  hue:{name:'色彩感覚テスト',unit:'ステージ',mean:17,sd:6,cls:'hue',hi:true},
+  memory:{name:'記憶力テスト',unit:'個',mean:9,sd:3,cls:'memory',hi:true},
 };
+const better=(m,a,b)=>MODES[m].hi?a>b:a<b;
 const fmt=(m,v)=>m==='numbers'?v.toFixed(2):String(Math.round(v));
 
 function erf(x){const s=Math.sign(x);x=Math.abs(x);const t=1/(1+.3275911*x);
   const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x);return s*y;}
-function topPct(m,v){const M=MODES[m];const p=.5*(1+erf((v-M.mean)/(M.sd*Math.SQRT2)));return clamp(p*100,.1,99.9);}
+function topPct(m,v){const M=MODES[m];let p=.5*(1+erf((v-M.mean)/(M.sd*Math.SQRT2)));if(M.hi)p=1-p;return clamp(p*100,.1,99.9);}
 const pctTxt=p=>p<1?p.toFixed(1):String(Math.round(p));
-function rankOf(p){
+const RANK_HI={SS:'神の領域',S:'達人級',A:'かなり鋭い',B:'ふつう',C:'もう少し',D:'これから'};
+function rankOf(p,m){
+  const r=rankOf0(p);if(m&&MODES[m].hi)r.t=RANK_HI[r.g];return r;
+}
+function rankOf0(p){
   if(p<=2)return{g:'SS',t:'人間やめてる'};
   if(p<=10)return{g:'S',t:'アスリート級'};
   if(p<=30)return{g:'A',t:'かなり速い'};
@@ -367,11 +396,13 @@ function startMode(m){
     gonogo:['押すな判定','<b style="color:var(--go)">緑の「押せ」</b>はすぐタップ。<br><b style="color:var(--stop)">赤の「押すな」</b>は絶対に押さない。<br>12問。ミス1回につき+100msのペナルティ。'],
     color:['色ことばテスト','「あか」「あお」などの文字が出ます。<br>文字の<b>意味ではなく、文字の色</b>のボタンを押してください。<br>20問。ミス1回につき+300msのペナルティ。'],
     numbers:['数字タッチ','1から25まで、順番にできるだけ速くタッチ。<br>まちがえると+1秒。'],
+    hue:['色彩感覚テスト','並んだマスの中から、<b>1つだけ色がちがうマス</b>をタップ。<br>ステージが進むほど色の差が小さくなります。<br>まちがえるか10秒たつとライフが1つ減ります（ライフ3）。'],
+    memory:['記憶力テスト','マスが1つずつ<b style="color:#ffd34d">光ります</b>。<br>光った順番どおりにタップしてください。<br>成功するたびに1つ長くなります。まちがえるとライフが1つ減ります（ライフ3）。'],
   }[m];
   setPad('neutral',`<div class="howto"><div class="ic ${M.cls}"><img src="img/mode_${m}.png" alt="" style="width:64px;height:64px"></div><h2>${texts[0]}</h2><p>${texts[1]}</p><button class="btn" id="bStart">スタート</button></div>`);
   G.onPad=null;
   $('bStart').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();sfx.tap();
-    ({simple:simpleStart,gonogo:gngStart,color:colorStart,numbers:numStart})[m]();},{passive:false});
+    ({simple:simpleStart,gonogo:gngStart,color:colorStart,numbers:numStart,hue:hueStart,memory:memStart})[m]();},{passive:false});
 }
 
 /* ---------- 1. 反応速度テスト ---------- */
@@ -554,6 +585,95 @@ function numTap(b,e){
   }
 }
 
+
+/* ---------- 5. 色彩感覚テスト ----------
+ * OKLab(見た目の差にほぼ比例する色空間)で基準色を選び、1マスだけ「色の差 d」ずらす。
+ * d = max(0.008, 0.22×0.9^(ステージ−1))。画面では ×100 して表示。スコア=クリアしたステージ */
+function oklabToLin(L,a,b){
+  const l_=L+0.3963377774*a+0.2158037573*b,m_=L-0.1055613458*a-0.0638541728*b,s_=L-0.0894841775*a-1.2914855480*b;
+  const l=l_*l_*l_,mm=m_*m_*m_,s=s_*s_*s_;
+  return [4.0767416621*l-3.3077115913*mm+0.2309699292*s,-1.2684380046*l+2.6097574011*mm-0.3413193965*s,-0.0041960863*l-0.7034186147*mm+1.7076147010*s];}
+const inGamut=c=>c.every(v=>v>=0&&v<=1);
+const enc=x=>Math.round((x<=0.0031308?12.92*x:1.055*Math.pow(x,1/2.4)-0.055)*255);
+const cssC=c=>'rgb('+c.map(enc).join(',')+')';
+const hueDelta=s=>Math.max(0.008,0.22*Math.pow(0.9,s-1));
+const hueSize=s=>s<=1?2:s<=3?3:s<=6?4:s<=10?5:s<=15?6:s<=22?7:8;
+function huePuzzle(n,d){
+  for(let k=0;k<400;k++){
+    const L=0.48+Math.random()*0.38,C=0.03+Math.random()*0.14,h=Math.random()*Math.PI*2;
+    const a=C*Math.cos(h),b=C*Math.sin(h);
+    let dx=(Math.random()*2-1)*0.7,dy=Math.random()*2-1,dz=Math.random()*2-1;const nr=Math.hypot(dx,dy,dz);if(nr<0.2)continue;
+    const c1=oklabToLin(L,a,b),c2=oklabToLin(L+d*dx/nr,a+d*dy/nr,b+d*dz/nr);
+    if(!inGamut(c1)||!inGamut(c2))continue;
+    const s1=cssC(c1),s2=cssC(c2);if(s1===s2)continue;
+    return {n,base:s1,odd:s2,idx:Math.floor(Math.random()*n*n),d};
+  }
+  return {n,base:'rgb(120,120,200)',odd:'rgb(128,120,200)',idx:0,d};
+}
+const fmtD=d=>(d*100).toFixed(1);
+const hearts=n=>'<span class="hearts">'+'❤️'.repeat(n)+'<span style="opacity:.25">'+'❤️'.repeat(Math.max(0,3-n))+'</span></span>';
+function hueStart(){Object.assign(G,{stage:1,lives:3,score:0,minD:null,miss:0});hueNext();}
+function hueNext(){
+  if(!G)return;
+  const p=huePuzzle(hueSize(G.stage),hueDelta(G.stage));G.p=p;G.state='go';
+  setProg(`ステージ ${G.stage}`);
+  setPad('neutral',`<div class="tinfo">色の差 <b>${fmtD(p.d)}</b>　${hearts(G.lives)}</div>
+    <div class="tgrid n${p.n}" id="tgrid" style="grid-template-columns:repeat(${p.n},1fr)">${Array.from({length:p.n*p.n},(_,i)=>`<i data-i="${i}" style="background:${i===p.idx?p.odd:p.base}"></i>`).join('')}</div>
+    <div class="cbar" style="margin:18px 0 0"><i id="cbar"></i></div><div class="fb" id="fb"></div>`);
+  pad.querySelectorAll('#tgrid i').forEach(el=>el.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();huePick(+el.dataset.i);},{passive:false}));
+  const bar=$('cbar');bar.style.transition='width 10000ms linear';requestAnimationFrame(()=>requestAnimationFrame(()=>{bar.style.width='0%';}));
+  later(()=>{if(G&&G.state==='go')hueMiss(-1,true);},10000);
+}
+function huePick(i){
+  if(!G||G.state!=='go')return;
+  if(i!==G.p.idx){hueMiss(i,false);return;}
+  clearTimers();G.state='done';G.score=G.stage;G.minD=G.minD==null?G.p.d:Math.min(G.minD,G.p.d);
+  beep(520*Math.pow(1.03,Math.min(G.stage,30)),.09,'sine');buzz('light');gngFb('正解！',true);
+  G.stage++;later(hueNext,260);
+}
+function hueMiss(i,timeout){
+  clearTimers();G.state='done';G.lives--;G.miss++;sfx.ng();buzz('heavy');
+  const tiles=$('tgrid').children;if(i>=0)tiles[i].classList.add('miss');tiles[G.p.idx].classList.add('ans');
+  gngFb(timeout?'時間切れ':'ざんねん',false);
+  if(G.lives>0){later(hueNext,1100);return;}
+  later(()=>finish('hue',G.score,{stats:[['見抜いた最小の色の差',G.minD!=null?fmtD(G.minD):'—'],['ミス',G.miss+'回']],trials:[]}),1200);
+}
+
+/* ---------- 6. 記憶力テスト(順番記憶) ----------
+ * 3×3のマスが1つずつ光る。同じ順番でタップ。成功で1つ長くなる(3から)。
+ * ミスでライフ-1、同じ順番をもう一度見せる。スコア=覚えられた最長の長さ */
+const PENTA=[0,2,4,7,9];
+const tileFreq=i=>330*Math.pow(2,(Math.floor(i/5)*12+PENTA[i%5])/12);
+const memStep=prev=>{let i;do{i=Math.floor(Math.random()*9);}while(i===prev);return i;};
+function memStart(){G.seq=[];for(let k=0;k<3;k++)G.seq.push(memStep(G.seq[k-1]));Object.assign(G,{lives:3,score:0,miss:0});memPlay();}
+function memPlay(){
+  if(!G)return;
+  G.state='show';G.pos=0;
+  setProg(`長さ ${G.seq.length}`);
+  setPad('neutral',`<div class="tinfo watch" id="tinfo">👀 よく見て…　${hearts(G.lives)}</div>
+    <div class="tgrid mem" id="tgrid" style="grid-template-columns:repeat(3,1fr)">${Array.from({length:9},(_,i)=>`<i data-i="${i}"></i>`).join('')}</div><div class="fb" id="fb"></div>`);
+  pad.querySelectorAll('#tgrid i').forEach(el=>el.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();memTap(+el.dataset.i,el);},{passive:false}));
+  const on=Math.max(300,560-G.seq.length*16),off=Math.round(on*.35);let k=0;
+  const step=()=>{if(!G||G.state!=='show')return;
+    if(k>=G.seq.length){G.state='input';const t=$('tinfo');t.className='tinfo go';t.innerHTML='👆 同じ順番でタップ　'+hearts(G.lives);return;}
+    const i=G.seq[k++],el=$('tgrid').children[i];el.classList.add('lit');beep(tileFreq(i),.22,'triangle',.14);
+    later(()=>{el.classList.remove('lit');later(step,off);},on);};
+  later(step,650);
+}
+function memTap(i,el){
+  if(!G||G.state!=='input')return;
+  if(i!==G.seq[G.pos]){
+    clearTimers();G.state='done';G.lives--;G.miss++;sfx.ng();buzz('heavy');
+    el.classList.add('miss');$('tgrid').children[G.seq[G.pos]].classList.add('ans');gngFb('ざんねん',false);
+    if(G.lives>0){later(memPlay,1400);return;}
+    later(()=>finish('memory',G.score,{stats:[['覚えられた最長',G.score+'個'],['ミス',G.miss+'回']],trials:[]}),1400);return;
+  }
+  G.pos++;beep(tileFreq(i),.22,'triangle',.14);buzz('light');
+  el.classList.remove('tap');void el.offsetWidth;el.classList.add('tap');setTimeout(()=>el.classList.remove('tap'),200);
+  if(G.pos>=G.seq.length){G.state='done';G.score=G.seq.length;gngFb('クリア！',true);
+    G.seq.push(memStep(G.seq[G.seq.length-1]));later(memPlay,850);}
+}
+
 /* =========================================================
  *  RESULT
  * ========================================================= */
@@ -565,7 +685,7 @@ const BADGES=[
   {id:'gaman',e:'✋',n:'鉄の我慢',c:'押すな判定をノーミス'},
   {id:'stroop',e:'🎨',n:'色に強い',c:'色ことばテストをノーミス'},
   {id:'num15',e:'🔢',n:'15秒の壁',c:'数字タッチ15秒未満'},
-  {id:'all',e:'🏅',n:'全種目制覇',c:'4つのテストを全部プレイ'},
+  {id:'all',e:'🏅',n:'全種目制覇',c:'6つのテストを全部プレイ'},
   {id:'streak3',e:'🔥',n:'3日連続',c:'3日続けてプレイ'},
   {id:'streak7',e:'📅',n:'1週間連続',c:'7日続けてプレイ'},
   {id:'30',e:'💪',n:'30回測定',c:'合計30回プレイ'},
@@ -576,7 +696,7 @@ function finish(m,v,extra){
   clearTimers();G=null;sfx.fin();buzz('success');
   const M=MODES[m];
   const prev=S.best[m];
-  const isNew=prev==null||v<prev;
+  const isNew=prev==null||better(m,v,prev);
   if(isNew)S.best[m]=v;
   S.hist[m].push({v:+v.toFixed(m==='numbers'?2:0),d:Date.now()});
   if(S.hist[m].length>60)S.hist[m].shift();
@@ -586,7 +706,7 @@ function finish(m,v,extra){
   if(S.lastDay!==td){const y=new Date();y.setDate(y.getDate()-1);
     const yd=y.getFullYear()+'-'+(y.getMonth()+1)+'-'+y.getDate();
     S.streak=S.lastDay===yd?S.streak+1:1;S.lastDay=td;}
-  const p=topPct(m,v),r=rankOf(p);
+  const p=topPct(m,v),r=rankOf(p,m);
   let age=null;
   if(m==='simple'){age=ageOf(v);S.lastAge=age;if(extra.bestTrial!=null)S.bestTrial=Math.min(S.bestTrial??9999,extra.bestTrial);}
   // バッジ
@@ -616,7 +736,7 @@ function finish(m,v,extra){
   $('rStats').innerHTML=st.map(([a,b])=>`<div><span>${a}</span><b style="${b.length>6?'font-size:16px':''}">${b}</b></div>`).join('');
   $('rTrials').innerHTML=(extra.trials||[]).map(x=>`<span class="${x.best?'best':''}${x.err?'err':''}">${x.v}</span>`).join('');
   $('rBadge').textContent=got.length?'🏅 バッジ獲得: '+got.map(id=>BADGES.find(b=>b.id===id).n).join('、'):'';
-  $('rNote').textContent=m==='simple'?'反射神経年齢・順位はお遊びの目安です。画面やタッチの遅延も含みます。':'順位は目安です。';
+  $('rNote').textContent=m==='simple'?'反射神経年齢・順位はお遊びの目安です。画面やタッチの遅延も含みます。':m==='hue'?'順位は目安です。画面の明るさや設定で結果は変わります。色覚検査ではありません。':'順位は目安です。';
   show('result');
   // レビュー依頼: 自己ベストを更新した気分の良いタイミングで(OS側で年3回まで)
   if(isNew&&prev!=null&&S.plays>=5)Native.requestReview();
@@ -649,12 +769,12 @@ function renderRecords(){
   else{
     const W=320,H=150,P=24,vs=h.map(x=>x.v);
     let lo=Math.min(...vs),hi=Math.max(...vs);if(hi-lo<1e-6){hi+=1;lo-=1;}const pad_=(hi-lo)*.15;lo-=pad_;hi+=pad_;
-    const X=i=>P+(W-P-8)*i/(h.length-1),Y=v=>8+(H-30)*(v-lo)/(hi-lo); // 小さい値(=速い)ほど上に描く
+    const X=i=>P+(W-P-8)*i/(h.length-1),Y=v=>M.hi?8+(H-30)*(hi-v)/(hi-lo):8+(H-30)*(v-lo)/(hi-lo); // 良い値ほど上に描く
     const pts=vs.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
-    const bi=vs.indexOf(Math.min(...vs));
+    const bi=vs.indexOf(M.hi?Math.max(...vs):Math.min(...vs));
     $('chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
       <line x1="${P}" y1="${H-20}" x2="${W-8}" y2="${H-20}" stroke="#2a3552"/>
-      <text x="2" y="14" fill="#8e9ab5" font-size="10">速い</text><text x="2" y="${H-24}" fill="#8e9ab5" font-size="10">遅い</text>
+      <text x="2" y="14" fill="#8e9ab5" font-size="10">${M.hi?'高い':'速い'}</text><text x="2" y="${H-24}" fill="#8e9ab5" font-size="10">${M.hi?'低い':'遅い'}</text>
       <polyline points="${pts}" fill="none" stroke="#22d07a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
       ${vs.map((v,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${i===bi?4.5:2.5}" fill="${i===bi?'#ffd166':'#22d07a'}"/>`).join('')}
       <text x="${W-8}" y="${H-5}" fill="#8e9ab5" font-size="10" text-anchor="end">直近${h.length}回</text>
@@ -664,9 +784,9 @@ function renderRecords(){
   const avg=all.length?all.reduce((a,b)=>a+b,0)/all.length:null;
   $('recStats').innerHTML=[
     ['自己ベスト',S.best[recMode]!=null?fmt(recMode,S.best[recMode])+M.unit:'—'],
-    ['平均（直近'+all.length+'回）',avg!=null?fmt(recMode,avg)+M.unit:'—'],
+    ['平均（直近'+all.length+'回）',avg!=null?(M.hi?avg.toFixed(1):fmt(recMode,avg))+M.unit:'—'],
     ['プレイ回数',all.length+'回'],
-    [recMode==='simple'?'1回のベスト':'ランク',recMode==='simple'?(S.bestTrial!=null?Math.round(S.bestTrial)+'ms':'—'):(S.best[recMode]!=null?rankOf(topPct(recMode,S.best[recMode])).g:'—')],
+    [recMode==='simple'?'1回のベスト':'ランク',recMode==='simple'?(S.bestTrial!=null?Math.round(S.bestTrial)+'ms':'—'):(S.best[recMode]!=null?rankOf(topPct(recMode,S.best[recMode]),recMode).g:'—')],
   ].map(([a,b])=>`<div><span>${a}</span><b>${b}</b></div>`).join('');
   $('badges').innerHTML=BADGES.map(b=>`<div class="badge ${S.badges[b.id]?'got':''}"><div class="e"><img src="img/badge_${b.id}.png" alt=""></div><div class="n">${b.n}</div><div class="c">${b.c}</div></div>`).join('');
 }
