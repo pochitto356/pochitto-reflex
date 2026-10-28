@@ -1,4 +1,5 @@
 # Codemagic CI/CD 設定 (ぽちっと反射神経 / Capacitor 7)
+# v1.2: Game Center のアプリ内プラグイン(ios-src/)をビルド時に組み込む
 # Macなしでクラウド上のMacでiOSビルド〜App Store Connectアップロードまで行う。
 #
 # ★ビルド前に埋める値 (konishiさんの作業。詳細は SETUP.md)
@@ -23,7 +24,7 @@ workflows:
       vars:
         APP_APPLE_ID: "6818035906"
         ADMOB_APP_ID: "ca-app-pub-7792368657314009~8846484493"
-        MARKETING_VERSION: "1.1"
+        MARKETING_VERSION: "1.2"
     scripts:
       - name: npmパッケージ取得
         script: npm install
@@ -33,6 +34,28 @@ workflows:
         script: npx @capacitor/assets generate --ios --iconBackgroundColor '#0d1220' --splashBackgroundColor '#0d1220'
       - name: Capacitor同期
         script: npx cap sync ios
+      - name: Game Center（全国ランキング）のアプリ内プラグインを組み込む
+        script: |
+          cp ios-src/GameCenterPlugin.swift ios-src/MainViewController.swift ios/App/App/
+          cp ios-src/App.entitlements ios/App/App/App.entitlements
+          # メイン画面を MainViewController に差し替える(プラグインの登録のため)
+          SB=ios/App/App/Base.lproj/Main.storyboard
+          sed -i '' 's/customClass="CAPBridgeViewController" customModule="Capacitor"/customClass="MainViewController" customModule="App" customModuleProvider="target"/' "$SB"
+          grep -q 'customClass="MainViewController"' "$SB" || { echo "Main.storyboard の差し替えに失敗"; cat "$SB"; exit 1; }
+          ruby -e '
+            require "xcodeproj"
+            p = Xcodeproj::Project.open("ios/App/App.xcodeproj")
+            t = p.targets.find { |x| x.name == "App" }
+            g = p.main_group["App"]
+            ["GameCenterPlugin.swift", "MainViewController.swift"].each do |f|
+              ref = g.files.find { |x| x.path == f } || g.new_reference(f)
+              t.add_file_references([ref]) unless t.source_build_phase.files_references.include?(ref)
+            end
+            g.files.find { |x| x.path == "App.entitlements" } || g.new_reference("App.entitlements")
+            t.build_configurations.each { |c| c.build_settings["CODE_SIGN_ENTITLEMENTS"] = "App/App.entitlements" }
+            p.save
+          '
+          grep -n "GameCenterPlugin.swift\|CODE_SIGN_ENTITLEMENTS" ios/App/App.xcodeproj/project.pbxproj | head
       - name: 最低対応OSを iOS 15 に(2027年春からAppleが15.0以上を必須化)
         script: |
           cd ios/App

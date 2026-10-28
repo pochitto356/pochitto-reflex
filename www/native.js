@@ -20,7 +20,7 @@
 
   var C = window.Capacitor;
   var isApp = !!(C && C.isNativePlatform && C.isNativePlatform());
-  var AdMob = null, Haptics = null, Share = null, InAppReview = null;
+  var AdMob = null, Haptics = null, Share = null, InAppReview = null, Filesystem = null, GC = null;
   var premium = false;
   var bannerShown = false;
   var interstitialReady = false;
@@ -42,8 +42,10 @@
     Haptics = C.Plugins.Haptics || null;
     Share = C.Plugins.Share || null;
     InAppReview = C.Plugins.InAppReview || null;
+    Filesystem = C.Plugins.Filesystem || null;
+    GC = C.Plugins.GameCenter || null; // ios-src/GameCenterPlugin.swift（アプリ内のプラグイン）
     // 順番が重要: ATTの許可ダイアログ → AdMob初期化 → 課金初期化
-    return requestATT().then(initAds).then(initIAP).catch(function (e) { log('init error', e); });
+    return requestATT().then(initAds).then(initIAP).then(function () { gcSignIn(false); }).catch(function (e) { log('init error', e); });
   }
 
   /* ---- ATT(トラッキングの許可) --------------------------------------
@@ -269,6 +271,56 @@
     setTimeout(function () { InAppReview.requestReview().catch(function () {}); }, 1200);
   }
 
+  // ---- 画像つきシェア ---------------------------------------------------
+  // dataUrl(PNG) をキャッシュに書き出して、iOSの共有シートに画像として渡す。
+  // 渡せなかったら false を返す(index.html 側で画像の表示や文章のシェアに切り替える)
+  function shareImage(dataUrl, text) {
+    var url = APP_STORE_ID ? 'https://apps.apple.com/jp/app/id' + APP_STORE_ID : '';
+    if (isApp && Share && Filesystem) {
+      return Filesystem.writeFile({ path: 'pochitto-reflex-result.png', data: dataUrl.split(',')[1], directory: 'CACHE' })
+        .then(function (r) { return Share.share({ text: text + (url ? '\n' + url : ''), files: [r.uri], dialogTitle: '結果をシェア' }); })
+        .then(function () { return true; })
+        .catch(function (e) { log('share image failed', e); share(text); return true; });
+    }
+    try {
+      return fetch(dataUrl).then(function (r) { return r.blob(); }).then(function (b) {
+        var f = new File([b], 'pochitto-reflex-result.png', { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [f] })) {
+          return navigator.share({ files: [f], text: text + (url ? '\n' + url : '') }).then(function () { return true; }, function () { return true; });
+        }
+        return false;
+      }).catch(function () { return false; });
+    } catch (e) { return Promise.resolve(false); }
+  }
+
+  // ---- Game Center(全国ランキング) ------------------------------------
+  // サインインしていない人には、起動時に勝手にサインイン画面を出さない。
+  // 「ランキング」を押したときにだけ出す。
+  var gcAuthed = false;
+  function gcSignIn(present) {
+    if (!GC) return Promise.resolve(false);
+    return GC.signIn({ present: !!present }).then(function (r) { gcAuthed = !!(r && r.authenticated); return gcAuthed; })
+      .catch(function (e) { log('gc signin', e); return false; });
+  }
+  function gcSubmit(id, score) {
+    if (!GC) return;
+    var go = function () { GC.submitScore({ leaderboardId: id, score: Math.round(score) }).catch(function (e) { log('gc submit', e); }); };
+    if (gcAuthed) go(); else gcSignIn(false).then(function (ok) { if (ok) go(); });
+  }
+  function gcRank(id) {
+    if (!GC) return Promise.resolve(null);
+    return (gcAuthed ? Promise.resolve(true) : gcSignIn(false)).then(function (ok) {
+      if (!ok) return null;
+      return GC.loadMyRank({ leaderboardId: id }).catch(function () { return null; });
+    });
+  }
+  function gcShow(id) {
+    if (!GC) { pseudo('全国ランキング', 'Game Center を利用できません。'); return; }
+    (gcAuthed ? Promise.resolve(true) : gcSignIn(true)).then(function (ok) {
+      if (ok) GC.showLeaderboard({ leaderboardId: id || '' }).catch(function () {});
+    });
+  }
+
   window.Native = {
     isApp: isApp,
     init: init,
@@ -277,6 +329,10 @@
     haptic: haptic,
     share: share,
     requestReview: requestReview,
+    shareImage: shareImage,
+    gcSubmit: gcSubmit,
+    gcRank: gcRank,
+    gcShow: gcShow,
     buyPremium: buyPremium,
     restore: restore,
     isPremium: function () { return premium; }
