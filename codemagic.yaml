@@ -83,7 +83,9 @@ workflows:
       - name: 署名設定を適用
         script: xcode-project use-profiles
       - name: IPAをビルド
-        script: xcode-project build-ipa --workspace ios/App/App.xcworkspace --scheme App
+        script: |
+          # 失敗したときに原因が画面で見えるよう、xcodebuild のエラー行を出す
+          xcode-project build-ipa --workspace ios/App/App.xcworkspace --scheme App || { echo "==== xcodebuild error ===="; grep -hE "error:|requires a provisioning|entitlement|Provisioning profile" /tmp/xcodebuild_logs/*.log | sort -u | head -40; exit 1; }
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
