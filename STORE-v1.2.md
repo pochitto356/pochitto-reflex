@@ -16,12 +16,12 @@
 
 ## プロモーション用テキスト（94/170・審査なしで変更可。v1.2公開に合わせて変える）
 ```
-毎日0時に新しいお題。全員が同じ問題に挑戦して、全国ランキングで順位がわかる「今日のチャレンジ」を追加しました。反射神経・色彩感覚・記憶力の6つのテストで、あなたの「目と脳」をランク判定。
+毎日0時に新しい5種目。全員が同じ問題に挑戦して、全国ランキングで順位がわかる「今日のチャレンジ」を追加しました。反射神経・色彩感覚・記憶力の6つのテストで、あなたの「目と脳」をランク判定。
 ```
 
 ## 新機能（v1.2）
 ```
-・毎日0時に新しいお題が出る「今日のチャレンジ」を追加しました。全員が同じ問題で、全国ランキング（Game Center）で順位がわかります
+・毎日0時に新しい5種目が出る「今日のチャレンジ」を追加しました。全員が同じ問題で、合計ポイントの全国ランキング（Game Center）で順位がわかります
 ・種目ごとの全国ランキングを追加しました
 ・結果を画像でシェアできるようになりました
 ・「押すな判定」を「がまんテスト」に名前を変えました
@@ -32,10 +32,10 @@
 画面が緑になった瞬間にタップ！ 反射神経・色彩感覚・記憶力を、6つのテストでSS〜Dのランクに判定します。
 毎日0時に変わる「今日のチャレンジ」では、全員が同じ問題に挑戦して全国ランキングで順位を競えます。
 
-■ 今日のチャレンジ（毎日）
-・毎日ちがう種目とルールが出ます（「逆順 25→1」「4×4マス」「漢字バージョン」など）
-・全員が同じ問題。1日3回まで挑戦でき、いちばん良い記録が今日の記録です
-・結果はポイントになり、Game Center の「今日のランキング」で全国の順位がわかります
+■ 今日のチャレンジ（毎日5種目）
+・毎日0時に、6つのテストから5種目が選ばれます。ルールも日替わり（「逆順 25→1」「4×4マス」「漢字10問」「一発勝負」など）
+・全員が同じ問題・同じ順番。5種目の合計ポイントで、Game Center の「今日のランキング」に挑戦
+・1日3回まで挑戦でき、いちばん良い合計が今日の記録です
 ・連続参加の日数と、1週間の記録の推移も見られます
 
 ■ 6つのテスト
@@ -62,8 +62,8 @@
 ```
 
 ## スクリーンショット（v1.2で差し替え）
-1. 今日のチャレンジ（ホームのカード）「毎日ちがうお題で、全国ランキング」
-2. 結果画面（ポイント・ランク・全国○位）「全員が同じ問題。順位がわかる」
+1. 今日のチャレンジ（今日の5種目）「毎日ちがう5種目で、全国ランキング」
+2. 結果画面（5種目の合計・全国○位）「全員が同じ問題。順位がわかる」
 3. 反応速度テスト「緑になった瞬間にタップ」
 4. 色彩感覚テスト「1つだけ色がちがう」
 5. 記憶力テスト「光った順番を覚える」
@@ -72,14 +72,14 @@
 
 ## 審査メモ（英語）
 ```
-v1.2 adds a "Daily Challenge": every day at 00:00 JST a new test/rule combination is selected, and all players get the same puzzle (seeded by date). Players can try up to 3 times a day; the best score is submitted to a Game Center recurring (daily) leaderboard. Per-test all-time leaderboards are also added. Game Center sign-in is optional; the app works fully without it. Results can be shared as an image.
+v1.2 adds a "Daily Challenge": every day at 00:00 JST, 5 of the 6 tests (with daily rule variations) are selected, and all players get the same puzzles in the same order (seeded by date). Each test result is converted to points and the total is submitted to a Game Center recurring (daily) leaderboard. Players can try up to 3 times a day. Per-test all-time leaderboards are also added. Game Center sign-in is optional; the app works fully without it. Results can be shared as an image.
 The Go/No-Go test was renamed to "がまんテスト" (Patience test).
 ```
 
 ## Game Center（App Store Connect で作るもの）
 | リーダーボードID | 名前 | 種類 | 並び | 書式 |
 |---|---|---|---|---|
-| pr_daily | 今日のチャレンジ | 定期（毎日・日本時間0時開始） | 大きいほど上 | 整数（ポイント） |
+| pr_daily | 今日のチャレンジ | 定期（毎日・日本時間0時開始） | 大きいほど上 | 整数（5種目の合計ポイント・0〜50,000） |
 | pr_simple | 反応速度テスト | 通常 | 小さいほど上 | ミリ秒 |
 | pr_gonogo | がまんテスト | 通常 | 小さいほど上 | ミリ秒 |
 | pr_color | 色ことばテスト | 通常 | 小さいほど上 | ミリ秒 |

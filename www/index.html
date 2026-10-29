@@ -104,6 +104,35 @@ body.has-banner .screen.bannered{padding-bottom:calc(env(safe-area-inset-bottom)
 .gcline b{color:var(--gold);font-family:var(--num);font-size:17px}.gcline a{color:var(--blue);text-decoration:underline;cursor:pointer}
 #modal p img{-webkit-touch-callout:default;user-select:auto}
 
+.t5{font-size:12px;color:var(--sub);font-weight:700;margin-bottom:6px}
+.chicons{display:flex;align-items:center;gap:4px}
+.chicons i{color:var(--sub);font-style:normal;font-size:12px}
+.chicons .ci{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex:none}
+.chicons .ci img{width:38px;height:38px}
+.chlist{margin:4px 0 14px;text-align:left}
+.chrow{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 10px;margin-bottom:7px}
+.chrow .n{font-family:var(--num);font-weight:900;color:var(--amber);width:18px;text-align:center}
+.chrow .ic{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0}
+.chrow .ic img{width:34px;height:34px}
+.chrow b{display:block;font-size:15px}.chrow span{font-size:12px;color:var(--sub)}
+.chintro h2{margin:6px 0 10px}.chintro p{font-size:12px;margin-bottom:14px}
+.chmid .mv{font-family:var(--num);font-size:64px;font-weight:900;margin-top:10px}.chmid .mv small{font-size:22px;color:var(--sub);margin-left:4px}
+.chmid .mp{font-family:var(--num);font-size:26px;font-weight:900;color:var(--amber)}
+.chmid .mt{color:var(--sub);margin:6px 0 18px}.chmid .mt b{color:var(--ink);font-family:var(--num);font-size:22px}
+.chmid .chrow{text-align:left;margin-bottom:14px}
+.chres{grid-column:1/-1;background:none!important;border:0!important;padding:0!important}
+.stats .chres div{background:none;border:0;padding:0;border-radius:0}
+.stats .chres .cr{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.stats .chres .gg{background:var(--bg2);border-radius:6px;padding:2px 0}
+.howto .chrow{text-align:left}
+.howto .chrow .ic{width:40px;height:40px;border-radius:12px;margin:0;font-size:inherit}
+.chres .cr{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:6px}
+.chres .n{font-family:var(--num);font-weight:900;color:var(--amber);width:16px}
+.chres .nm{flex:1;min-width:0}.chres .nm b{display:block;font-size:13px}.chres .nm span{font-size:11px;color:var(--sub)}
+.chres .vv{font-family:var(--num);font-weight:800;font-size:15px}.chres .vv small{font-size:11px;color:var(--sub);margin-left:2px}
+.chres .gg{font-family:var(--num);font-weight:900;font-size:13px;width:26px;text-align:center;border-radius:6px;background:var(--bg2)}
+.chres .gg.gSS,.chres .gg.gS{color:var(--gold)}.chres .gg.gA{color:var(--go)}
+.chres .pp{font-family:var(--num);font-weight:900;color:var(--amber);font-size:15px;width:52px;text-align:right}
 /* ---------- play ---------- */
 #play{padding:0;overflow:hidden}
 #pad{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
@@ -413,7 +442,10 @@ function markShown(cb){G.raf=requestAnimationFrame(t=>{cb(t);});}
 /* タップ時刻: event.timeStamp は performance.now() と同じ基準(高精度)。おかしければ現在時刻 */
 function tapTime(e){const t=e&&e.timeStamp,n=now();return(t&&t>n-1000&&t<=n+1)?t:n;}
 
-$('bQuit').onclick=e=>{e.stopPropagation();sfx.tap();clearTimers();G=null;R=Math.random;renderHome();};
+$('bQuit').onclick=e=>{e.stopPropagation();sfx.tap();
+  const quit=()=>{clearTimers();G=null;R=Math.random;CH=null;renderHome();};
+  if(CH){const g=G;modal('チャレンジをやめますか？','やめると今回の挑戦は記録されず、挑戦回数は1回使います。',quit,()=>{G=g;},'やめる');return;}
+  quit();};
 pad.addEventListener('pointerdown',e=>{e.preventDefault();if(G&&G.onPad)G.onPad(e);},{passive:false});
 
 function startMode(m,ch){
@@ -429,12 +461,13 @@ function startMode(m,ch){
     hue:['色彩感覚テスト','並んだマスの中から、<b>1つだけ色がちがうマス</b>をタップ。<br>ステージが進むほど色の差が小さくなります。<br>まちがえるか10秒たつとライフが1つ減ります（ライフ3）。'],
     memory:['記憶力テスト','マスが1つずつ<b style="color:#ffd34d">光ります</b>。<br>光った順番どおりにタップしてください。<br>成功するたびに1つ長くなります。まちがえるとライフが1つ減ります（ライフ3）。'],
   }[m];
-  const chHead=ch?`<div class="chtag">今日のチャレンジ #${ch.no}</div>`:'';
-  const chNote=ch?`<div class="chvar">${ch.v.name}${ch.v.desc?'<br><span>'+ch.v.desc+'</span>':''}</div><p style="margin-top:-6px">全員が同じ問題。1日${CH_TRIES}回まで挑戦でき、いちばん良い記録が今日の記録になります（あと${CH_TRIES-S.ch.tries}回）。</p>`:'';
+  if(ch){const v=ch.v;texts[1]=texts[1].replace('12問',(v.qn||12)+'問').replace('20問',(v.qn||20)+'問').replace(/ライフ3）/g,'ライフ'+(v.lives||3)+'）').replace('5回の平均',(v.n||5)+'回の平均').replace('1から25まで',v.rev?'25から1まで':'1から25まで');}
+  const chHead=ch?`<div class="chtag">今日のチャレンジ #${ch.no}・第${ch.k+1}種目 / ${CH_N}</div>`:'';
+  const chNote=ch?`<div class="chvar">${ch.v.name}${ch.v.desc?'<br><span>'+ch.v.desc+'</span>':''}</div>`:'';
   setPad('neutral',`<div class="howto">${chHead}<div class="ic ${M.cls}"><img src="img/mode_${m}.png" alt="" style="width:64px;height:64px"></div><h2>${texts[0]}</h2>${chNote}<p>${texts[1]}</p><button class="btn" id="bStart">スタート</button></div>`);
   G.onPad=null;
   $('bStart').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();sfx.tap();
-    R=ch?seeded(ch.seed+S.ch.tries*7919):Math.random; // チャレンジは「何回目か」ごとに全員同じ問題
+    R=ch?seeded(ch.seed):Math.random; // チャレンジは「何回目の挑戦か・何種目目か」ごとに全員同じ問題
     ({simple:simpleStart,gonogo:gngStart,color:colorStart,numbers:numStart,hue:hueStart,memory:memStart})[m]();},{passive:false});
 }
 
@@ -489,15 +522,16 @@ function simpleEnd(){
 
 /* ---------- 2. がまんテスト (Go/No-Go) ---------- */
 const GNG_N=12,GNG_NOGO=4,GNG_LIMIT=1000,GNG_PEN=100;
+const gngN=()=>(G&&G.v&&G.v.qn)||GNG_N;
 function gngStart(){
   const ng=(G.v&&G.v.nogo)||GNG_NOGO;
-  const seq=shuffle(Array(GNG_N-ng).fill('go').concat(Array(ng).fill('stop')));
+  const seq=shuffle(Array(gngN()-ng).fill('go').concat(Array(ng).fill('stop')));
   if(seq[0]==='stop'){const i=seq.indexOf('go');[seq[0],seq[i]]=[seq[i],seq[0]];} // 1問目は押せ
   Object.assign(G,{seq,i:0,rts:[],err:0,log:[]});gngNext();
 }
 function gngNext(){
   if(G.i>=G.seq.length){gngEnd();return;}
-  setProg(`${G.i+1} / ${GNG_N}`);
+  setProg(`${G.i+1} / ${gngN()}`);
   G.state='wait';
   setPad('neutral',`<div class="sig" style="background:var(--card);box-shadow:none;color:var(--sub);font-size:22px">…</div><div class="fb" id="fb"></div>`);
   G.onPad=gngPad;
@@ -542,6 +576,7 @@ function gngEnd(){
 /* ---------- 3. 色ことばテスト (ストループ) ---------- */
 const COLORS=[{k:'red',w:'あか',c:'#ff4b55'},{k:'blue',w:'あお',c:'#3d8bff'},{k:'green',w:'みどり',c:'#22d07a'},{k:'yellow',w:'きいろ',c:'#ffc61a'}];
 const COLOR_N=20,COLOR_PEN=300,COLOR_LIMIT=3000;
+const colorN=()=>(G&&G.v&&G.v.qn)||COLOR_N;
 const KANJI={red:'赤',blue:'青',green:'緑',yellow:'黄'};
 const cw=c=>G&&G.v&&G.v.kanji?KANJI[c.k]:c.w;
 function colorStart(){
@@ -551,8 +586,8 @@ function colorStart(){
   colorNext();
 }
 function colorNext(){
-  if(G.i>=COLOR_N){colorEnd();return;}
-  setProg(`${G.i+1} / ${COLOR_N}`);
+  if(G.i>=colorN()){colorEnd();return;}
+  setProg(`${G.i+1} / ${colorN()}`);
   // 3/4 は文字と色が不一致(ここが難しい)
   const word=COLORS[Math.floor(R()*4)];
   let ink=word;
@@ -682,17 +717,17 @@ function hueMiss(i,timeout){
 const PENTA=[0,2,4,7,9];
 const tileFreq=i=>330*Math.pow(2,(Math.floor(i/5)*12+PENTA[i%5])/12);
 const memStep=prev=>{const n=G&&G.gs?G.gs*G.gs:9;let i;do{i=Math.floor(R()*n);}while(i===prev);return i;};
-function memStart(){G.gs=(G.v&&G.v.gs)||3;G.seq=[];for(let k=0;k<3;k++)G.seq.push(memStep(G.seq[k-1]));Object.assign(G,{lives:3,score:0,miss:0});memPlay();}
+function memStart(){G.gs=(G.v&&G.v.gs)||3;G.seq=[];for(let k=0;k<3;k++)G.seq.push(memStep(G.seq[k-1]));const L=(G.v&&G.v.lives)||3;Object.assign(G,{lives:L,maxL:L,score:0,miss:0});memPlay();}
 function memPlay(){
   if(!G)return;
   G.state='show';G.pos=0;
   setProg(`長さ ${G.seq.length}`);
-  setPad('neutral',`<div class="tinfo watch" id="tinfo">👀 よく見て…　${hearts(G.lives)}</div>
+  setPad('neutral',`<div class="tinfo watch" id="tinfo">👀 よく見て…　${hearts(G.lives,G.maxL)}</div>
     <div class="tgrid mem" id="tgrid" style="grid-template-columns:repeat(${G.gs},1fr)">${Array.from({length:G.gs*G.gs},(_,i)=>`<i data-i="${i}"></i>`).join('')}</div><div class="fb" id="fb"></div>`);
   pad.querySelectorAll('#tgrid i').forEach(el=>el.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();memTap(+el.dataset.i,el);},{passive:false}));
   const on=Math.max(300,560-G.seq.length*16),off=Math.round(on*.35);let k=0;
   const step=()=>{if(!G||G.state!=='show')return;
-    if(k>=G.seq.length){G.state='input';const t=$('tinfo');t.className='tinfo go';t.innerHTML='👆 同じ順番でタップ　'+hearts(G.lives);return;}
+    if(k>=G.seq.length){G.state='input';const t=$('tinfo');t.className='tinfo go';t.innerHTML='👆 同じ順番でタップ　'+hearts(G.lives,G.maxL);return;}
     const i=G.seq[k++],el=$('tgrid').children[i];el.classList.add('lit');beep(tileFreq(i),.22,'triangle',.14);
     later(()=>{el.classList.remove('lit');later(step,off);},on);};
   later(step,650);
@@ -732,7 +767,7 @@ let last=null;
 function finish(m,v,extra){
   const ch=G&&G.ch;
   clearTimers();G=null;R=Math.random;sfx.fin();buzz('success');
-  if(ch){finishChallenge(ch,m,v,extra);return;}
+  if(ch){finishChallengeStage(ch,m,v,extra);return;}
   $('rGc').textContent='';$('rCh').innerHTML='';
   const M=MODES[m];
   const prev=S.best[m];
@@ -793,76 +828,100 @@ $('bHome').onclick=()=>{sfx.tap();adThen(renderHome);};
 $('bShare').onclick=()=>{sfx.tap();if(last)shareResult(last);};
 
 /* =========================================================
- *  今日のチャレンジ（日替わり・全員同じ問題）
- *  日本時間の0時に切り替わる。種目×ルール12通りを、12日ごとに順番を入れかえて出す。
- *  1日3回まで挑戦でき、いちばん良いポイントが今日の記録(Game Centerの今日のランキング)。
+ *  今日のチャレンジ（日替わり・5種目・全員同じ問題）
+ *  日本時間の0時に切り替わる。6種目から5つを選び、それぞれ2つのルールのどちらかで出す。
+ *  種目の順番・ルール・問題は日付で決まるので全員同じ。1日3回まで挑戦でき、
+ *  5種目の合計ポイント(最大49,950)のベストが今日の記録(Game Centerの今日のランキング)。
  * ========================================================= */
-const CH_TRIES=3;
+const CH_TRIES=3,CH_N=5;
 const DAY0=Date.UTC(2026,9,27,15,0,0); // 2026-10-28 00:00(日本時間) = #1
-const VARIANTS=[
-  {m:'simple',name:'5回勝負'},
-  {m:'simple',name:'3回の一発勝負',desc:'3回の平均で判定',n:3},
-  {m:'gonogo',name:'ふつう'},
-  {m:'gonogo',name:'がまん多め',desc:'12問中6問が赤の■',nogo:6,mean:440},
-  {m:'color',name:'ひらがな'},
-  {m:'color',name:'漢字バージョン',desc:'「赤」「青」の漢字で出題',kanji:true,mean:950},
-  {m:'numbers',name:'1→25'},
-  {m:'numbers',name:'逆順 25→1',desc:'25から1へ順番にタッチ',rev:true,mean:23},
-  {m:'hue',name:'ライフ3'},
-  {m:'hue',name:'一発勝負',desc:'ライフ1。1回まちがえたら終わり',lives:1,mean:11,sd:5},
-  {m:'memory',name:'3×3マス'},
-  {m:'memory',name:'4×4マス',desc:'マスが16個にふえる',gs:4,mean:8,sd:3},
-];
+// 1種目あたり30秒〜1分で終わるよう、通常より短いルールにしている
+const DAILY={
+  simple:[{name:'5回勝負'},{name:'3回の一発勝負',n:3}],
+  gonogo:[{name:'8問',qn:8,nogo:3},{name:'がまん多め',desc:'8問中4問が赤の■',qn:8,nogo:4,mean:440}],
+  color:[{name:'ひらがな10問',qn:10},{name:'漢字10問',desc:'「赤」「青」の漢字で出題',qn:10,kanji:true,mean:950}],
+  numbers:[{name:'1→25'},{name:'逆順 25→1',desc:'25から1へ順番にタッチ',rev:true,mean:23}],
+  hue:[{name:'ライフ2',lives:2,mean:14,sd:6},{name:'一発勝負',desc:'1回まちがえたら終わり',lives:1,mean:11,sd:5}],
+  memory:[{name:'3×3・ライフ2',lives:2,mean:8,sd:3},{name:'4×4・一発勝負',desc:'マスが16個・ライフ1',gs:4,lives:1,mean:6.5,sd:2.5}],
+};
 function dayIdx(t){return Math.floor(((t||Date.now())-DAY0)/86400000);}
 function dayLabel(d){const t=new Date(DAY0+d*86400000+9*3600000);return (t.getUTCMonth()+1)+'/'+t.getUTCDate();}
 function chOf(d){
-  const blk=Math.floor(d/12),rng=seeded(9973+blk*7919);let order;
-  for(let k=0;k<60;k++){ // 同じ種目が2日続かない並びを選ぶ
-    order=shuffle(VARIANTS.map((_,i)=>i),rng);
-    if(order.every((x,i)=>i===0||VARIANTS[x].m!==VARIANTS[order[i-1]].m))break;
-  }
-  const v=VARIANTS[order[((d%12)+12)%12]];
-  return {d,no:d+1,v,seed:(Math.imul(d+1,2654435761)>>>0)};
+  const rng=seeded(9973+d*7919);
+  const modes=shuffle(Object.keys(DAILY),rng).slice(0,CH_N);
+  const stages=modes.map(m=>({m,v:DAILY[m][rng()<.5?0:1]}));
+  return {d,no:d+1,stages,seed:(Math.imul(d+1,2654435761)>>>0)};
 }
 const todayCh=()=>chOf(dayIdx());
-function chPoints(v,val){ // 種目がちがっても比べられるよう、上位%を0〜9990ポイントにする(大きいほど良い)
-  const M=MODES[v.m],mean=v.mean||M.mean,sd=v.sd||M.sd;
+function chPoints(m,v,val){ // 種目がちがっても足せるよう、上位%を0〜9,990ポイントにする(大きいほど良い)
+  const M=MODES[m],mean=v.mean||M.mean,sd=v.sd||M.sd;
   let p=.5*(1+erf((val-mean)/(sd*Math.SQRT2)));if(M.hi)p=1-p;p=clamp(p*100,.1,99.9);
   return {pts:Math.round((100-p)*100),p};
 }
 function chSync(){const d=dayIdx();if(S.ch.day!==d){S.ch.day=d;S.ch.tries=0;S.ch.best=null;S.ch.bestV=null;save();}}
+let CH=null; // 挑戦中の状態 {c, i, res[], tryNo}
 function startChallenge(){
   chSync();
   const c=todayCh();
   if(S.ch.tries>=CH_TRIES){
-    modal('今日のチャレンジは終わり','今日は'+CH_TRIES+'回挑戦しました。明日の0時に新しいお題が出ます。\n今日の記録：'+(S.ch.best!=null?S.ch.best+'ポイント':'—'),()=>{},null,'OK');return;}
-  startMode(c.v.m,c);
+    modal('今日のチャレンジは終わり','今日は'+CH_TRIES+'回挑戦しました。明日の0時に新しいお題が出ます。\n今日の記録：'+(S.ch.best!=null?S.ch.best.toLocaleString()+'ポイント':'—'),()=>{},null,'OK');return;}
+  clearTimers();G=null;R=Math.random;
+  CH={c,i:0,res:[],tryNo:S.ch.tries};
+  S.ch.tries++;save(); // 途中でやめても1回分(悪い回だけやめるのを防ぐ)
+  show('play');setProg('');
+  const list=c.stages.map((s,k)=>`<div class="chrow"><span class="n">${k+1}</span><div class="ic ${MODES[s.m].cls}"><img src="img/mode_${s.m}.png" alt=""></div><div><b>${MODES[s.m].name}</b><span>${s.v.name}</span></div></div>`).join('');
+  setPad('neutral',`<div class="howto chintro"><div class="chtag">今日のチャレンジ #${c.no}（${dayLabel(c.d)}）</div><h2>今日の5種目</h2>
+    <div class="chlist">${list}</div><p>全員が同じ問題・同じ順番。5種目の合計ポイントで全国ランキングに挑戦します。<br>1日${CH_TRIES}回まで（これが${CH.tryNo+1}回目）。途中でやめても1回と数えます。</p>
+    <button class="btn" id="bChGo">はじめる</button></div>`);
+  G={mode:'chintro'};G.onPad=null;
+  $('bChGo').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();sfx.tap();chStage();},{passive:false});
 }
-function finishChallenge(ch,m,v,extra){
+function chStage(){
+  const s=CH.c.stages[CH.i];
+  startMode(s.m,{no:CH.c.no,d:CH.c.d,v:s.v,k:CH.i,seed:(CH.c.seed+CH.i*104729+CH.tryNo*7919)>>>0});
+}
+function finishChallengeStage(ch,m,v,extra){
+  const {pts,p}=chPoints(m,ch.v,v);
+  CH.res.push({m,v:ch.v,val:v,pts,p});
+  const total=CH.res.reduce((a,b)=>a+b.pts,0);
+  if(CH.i<CH_N-1){
+    const M=MODES[m],nx=CH.c.stages[CH.i+1],NM=MODES[nx.m];
+    show('play');setProg(`${CH.i+1} / ${CH_N} 種目`);
+    setPad('neutral',`<div class="howto chmid"><div class="chtag">第${CH.i+1}種目 おわり</div>
+      <div class="mv">${fmt(m,v)}<small>${M.unit}</small></div><div class="mp">+${pts.toLocaleString()} pt</div>
+      <div class="mt">合計 <b>${total.toLocaleString()}</b> pt</div>
+      <div class="chrow next"><span class="n">${CH.i+2}</span><div class="ic ${NM.cls}"><img src="img/mode_${nx.m}.png" alt=""></div><div><b>つぎは ${NM.name}</b><span>${nx.v.name}</span></div></div>
+      <button class="btn" id="bChNext">つぎの種目へ</button></div>`);
+    G={mode:'chmid'};G.onPad=null;
+    $('bChNext').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();sfx.tap();CH.i++;chStage();},{passive:false});
+    return;
+  }
+  finishChallenge();
+}
+function finishChallenge(){
   chSync();
-  const M=MODES[m],{pts,p}=chPoints(ch.v,v),r=rankOf(p,m);
-  S.ch.tries++;S.plays++;S.doneSinceAd++;
-  const isBest=S.ch.best==null||pts>S.ch.best;
-  if(isBest){S.ch.best=pts;S.ch.bestV=v;}
-  S.ch.log[ch.d]=S.ch.best;
+  const c=CH.c,res=CH.res;CH=null;
+  const total=res.reduce((a,b)=>a+b.pts,0),avgP=res.reduce((a,b)=>a+b.p,0)/res.length;
+  const r=rankOf0(avgP);r.t=RANK_HI[r.g];
+  S.plays++;S.doneSinceAd++;
+  const isBest=S.ch.best==null||total>S.ch.best;
+  if(isBest){S.ch.best=total;S.ch.bestV=null;}
+  S.ch.log[c.d]=S.ch.best;
   const keys=Object.keys(S.ch.log).map(Number).sort((a,b)=>b-a);keys.slice(30).forEach(k=>delete S.ch.log[k]);
-  if(S.ch.last!==ch.d){S.ch.streak=S.ch.last===ch.d-1?S.ch.streak+1:1;S.ch.last=ch.d;}
-  if(Object.keys(MODES).every(k=>S.hist[k].length))S.badges.all=S.badges.all||Date.now();
+  if(S.ch.last!==c.d){S.ch.streak=S.ch.last===c.d-1?S.ch.streak+1:1;S.ch.last=c.d;}
   save();
-  Native.gcSubmit('pr_daily',pts);
-  last={m,v,p,r,age:null,ch,pts};
+  Native.gcSubmit('pr_daily',total);
+  last={m:null,v:total,p:avgP,r,age:null,ch:c,pts:total,res};
   const left=CH_TRIES-S.ch.tries;
-  $('rCh').innerHTML=`<div class="chtag" style="margin-top:6px">今日のチャレンジ #${ch.no}（${dayLabel(ch.d)}）</div>`;
-  $('rMode').textContent=M.name+'・'+ch.v.name;
-  $('rVal').innerHTML=`${fmt(m,v)}<small>${M.unit}</small>`;
+  $('rCh').innerHTML=`<div class="chtag" style="margin-top:6px">今日のチャレンジ #${c.no}（${dayLabel(c.d)}）</div>`;
+  $('rMode').textContent='5種目の合計';
+  $('rVal').innerHTML=`${total.toLocaleString()}<small>pt</small>`;
   $('rNew').innerHTML=isBest&&S.ch.tries>1?'<span class="newrec">今日のベスト更新！</span>':'';
-  $('rRank').innerHTML=`<div class="g g${r.g}">${r.g}</div><div><div class="tt">${pts.toLocaleString()} <span style="font-size:14px">ポイント</span></div><div class="pc">上位 ${pctTxt(p)}%（目安）</div></div>`;
-  const st=extra.stats.slice();
-  st.unshift(['今日のベスト',S.ch.best.toLocaleString()+'pt'],['連続参加',S.ch.streak+'日']);
-  $('rStats').innerHTML=st.map(([a,b])=>`<div><span>${a}</span><b style="${b.length>6?'font-size:16px':''}">${b}</b></div>`).join('');
-  $('rTrials').innerHTML=(extra.trials||[]).map(x=>`<span class="${x.best?'best':''}${x.err?'err':''}">${x.v}</span>`).join('');
+  $('rRank').innerHTML=`<div class="g g${r.g}">${r.g}</div><div><div class="tt">${r.t}</div><div class="pc">5種目の平均 上位 ${pctTxt(avgP)}%（目安）</div></div>`;
+  $('rStats').innerHTML='<div class="chres">'+res.map((x,k)=>{const M=MODES[x.m],rr=rankOf0(x.p);return `<div class="cr"><span class="n">${k+1}</span><div class="nm"><b>${M.name}</b><span>${x.v.name}</span></div><div class="vv">${fmt(x.m,x.val)}<small>${M.unit}</small></div><div class="gg g${rr.g}">${rr.g}</div><div class="pp">${x.pts.toLocaleString()}</div></div>`;}).join('')+'</div>';
+  $('rTrials').innerHTML=`<span>今日のベスト ${S.ch.best.toLocaleString()}pt</span><span>連続参加 ${S.ch.streak}日</span>`;
   $('rBadge').textContent='';
-  $('rNote').textContent='ポイントは上位%（目安）から計算します。全国の順位はGame Centerの「今日のランキング」です。';
+  $('rNote').textContent='ポイントは各種目の上位%（目安）から計算し、5種目を合計します。全国の順位はGame Centerの「今日のランキング」です。';
   $('bAgain').textContent=left>0?`もう一度挑戦（あと${left}回）`:'';$('bAgain').style.display=left>0?'':'none';
   showGcRank('pr_daily','今日');
   show('result');
@@ -896,24 +955,41 @@ async function resultImage(L,noMedal){
   const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#1a2442');g.addColorStop(1,'#0d1220');x.fillStyle=g;x.fillRect(0,0,W,H);
   x.textAlign='center';x.fillStyle='#22d07a';x.beginPath();x.arc(W/2-250,120,16,0,7);x.fill();
   x.fillStyle='#f2f5fb';x.font=`800 54px ${F}`;x.fillText('ぽちっと反射神経',W/2+20,140);
-  const M=MODES[L.m];let y=250;
-  if(L.ch){x.fillStyle='#ffb020';x.font=`800 44px ${F}`;x.fillText(`今日のチャレンジ #${L.ch.no}（${dayLabel(L.ch.d)}）`,W/2,y);y+=70;}
-  x.fillStyle='#8e9ab5';x.font=`700 46px ${F}`;x.fillText(M.name+(L.ch?'・'+L.ch.v.name:''),W/2,y);
-  x.fillStyle='#f2f5fb';x.font=`900 190px ${N}`;const vs=fmt(L.m,L.v);x.fillText(vs,W/2-40,y+230);
-  const vw=x.measureText(vs).width;x.textAlign='left';x.fillStyle='#8e9ab5';x.font=`800 64px ${F}`;x.fillText(M.unit,W/2-40+vw/2+14,y+230);x.textAlign='center';
   const medal=noMedal?null:await loadImg('img/rank_'+L.r.g.toLowerCase()+'.png');
-  const my=y+300;if(medal)x.drawImage(medal,W/2-130,my,260,260);
-  x.fillStyle=['SS','S'].includes(L.r.g)?'#3a2a00':'#fff';x.font=`900 96px ${N}`;x.fillText(L.r.g,W/2,my+(L.r.g==='SS'?175:165));
-  x.fillStyle='#f2f5fb';x.font=`900 58px ${F}`;x.fillText(L.ch?L.pts.toLocaleString()+' ポイント':L.r.t,W/2,my+340);
-  x.fillStyle='#8e9ab5';x.font=`700 44px ${F}`;x.fillText('上位 '+pctTxt(L.p)+'%（目安）'+(L.age!=null?'・反射神経年齢 '+L.age+'歳':''),W/2,my+410);
-  x.fillStyle='#22d07a';x.font=`800 44px ${F}`;x.fillText(L.ch?'同じ問題で、あなたも挑戦！':'あなたは何'+M.unit+'？',W/2,H-110);
-  x.fillStyle='#8e9ab5';x.font=`600 34px ${F}`;x.fillText('App Store「ぽちっと反射神経」',W/2,H-55);
+  const drawMedal=(cx,cy,s)=>{if(medal)x.drawImage(medal,cx-s/2,cy,s,s);x.fillStyle=['SS','S'].includes(L.r.g)?'#3a2a00':'#fff';x.font=`900 ${Math.round(s*.37)}px ${N}`;x.fillText(L.r.g,cx,cy+s*(L.r.g==='SS'?.67:.63));};
+  if(L.ch&&L.res){ // 今日のチャレンジ(5種目)
+    x.fillStyle='#ffb020';x.font=`800 46px ${F}`;x.fillText(`今日のチャレンジ #${L.ch.no}（${dayLabel(L.ch.d)}）`,W/2,240);
+    x.textAlign='left';x.fillStyle='#f2f5fb';x.font=`900 150px ${N}`;x.fillText(L.pts.toLocaleString(),110,420);
+    const tw=x.measureText(L.pts.toLocaleString()).width;x.fillStyle='#8e9ab5';x.font=`800 54px ${F}`;x.fillText('pt',110+tw+14,420);
+    x.textAlign='center';drawMedal(W-210,290,200);
+    x.fillStyle='#8e9ab5';x.font=`700 38px ${F}`;x.textAlign='left';x.fillText(L.r.t+'・5種目の平均 上位'+pctTxt(L.p)+'%（目安）',110,480);
+    let y=560;
+    L.res.forEach((r,k)=>{const M=MODES[r.m];
+      x.fillStyle='#1b2338';x.beginPath();if(x.roundRect)x.roundRect(90,y,W-180,104,22);else x.rect(90,y,W-180,104);x.fill();
+      x.fillStyle='#8e9ab5';x.font=`800 36px ${N}`;x.textAlign='center';x.fillText(String(k+1),140,y+66);
+      x.textAlign='left';x.fillStyle='#f2f5fb';x.font=`800 38px ${F}`;x.fillText(M.name,190,y+50);
+      x.fillStyle='#8e9ab5';x.font=`600 28px ${F}`;x.fillText(r.v.name,190,y+86);
+      x.textAlign='right';x.fillStyle='#f2f5fb';x.font=`800 40px ${N}`;x.fillText(fmt(r.m,r.val)+M.unit,W-300,y+64);
+      x.fillStyle='#ffb020';x.font=`800 38px ${N}`;x.fillText(r.pts.toLocaleString(),W-120,y+64);
+      y+=120;});
+    x.textAlign='center';x.fillStyle='#22d07a';x.font=`800 44px ${F}`;x.fillText('同じ5種目で、あなたも挑戦！',W/2,H-110);
+  }else{
+    const M=MODES[L.m];let y=250;
+    x.fillStyle='#8e9ab5';x.font=`700 46px ${F}`;x.fillText(M.name,W/2,y);
+    x.fillStyle='#f2f5fb';x.font=`900 190px ${N}`;const vs=fmt(L.m,L.v);x.fillText(vs,W/2-40,y+230);
+    const vw=x.measureText(vs).width;x.textAlign='left';x.fillStyle='#8e9ab5';x.font=`800 64px ${F}`;x.fillText(M.unit,W/2-40+vw/2+14,y+230);x.textAlign='center';
+    const my=y+300;drawMedal(W/2,my,260);
+    x.fillStyle='#f2f5fb';x.font=`900 58px ${F}`;x.fillText(L.r.t,W/2,my+340);
+    x.fillStyle='#8e9ab5';x.font=`700 44px ${F}`;x.fillText('上位 '+pctTxt(L.p)+'%（目安）'+(L.age!=null?'・反射神経年齢 '+L.age+'歳':''),W/2,my+410);
+    x.fillStyle='#22d07a';x.font=`800 44px ${F}`;x.fillText('あなたは何'+M.unit+'？',W/2,H-110);
+  }
+  x.textAlign='center';x.fillStyle='#8e9ab5';x.font=`600 34px ${F}`;x.fillText('App Store「ぽちっと反射神経」',W/2,H-55);
   try{return c.toDataURL('image/png');}catch(e){if(!noMedal)return resultImage(L,true);throw e;} // 画像が使えない環境ではメダル無しで作る
 }
 async function shareResult(L){
-  const M=MODES[L.m];
-  let t=L.ch?`【ぽちっと反射神経】今日のチャレンジ #${L.ch.no}\n${M.name}・${L.ch.v.name}：${fmt(L.m,L.v)}${M.unit}（${L.pts.toLocaleString()}ポイント・${L.r.g}ランク）\n同じ問題で勝負しよう！ #ぽちっと反射神経`
-    :`【ぽちっと反射神経】${M.name}：${fmt(L.m,L.v)}${M.unit}（${L.r.g}ランク・上位${pctTxt(L.p)}%）`+(L.age!=null?`\n反射神経年齢は ${L.age}歳 でした`:'')+`\nあなたは何${M.unit}？ #ぽちっと反射神経`;
+  let t;
+  if(L.ch&&L.res){t=`【ぽちっと反射神経】今日のチャレンジ #${L.ch.no}\n5種目の合計 ${L.pts.toLocaleString()}pt（${L.r.g}ランク）\n`+L.res.map((r,k)=>`${k+1}. ${MODES[r.m].name} ${fmt(r.m,r.val)}${MODES[r.m].unit}`).join('\n')+`\n同じ5種目で勝負しよう！ #ぽちっと反射神経`;}
+  else{const M=MODES[L.m];t=`【ぽちっと反射神経】${M.name}：${fmt(L.m,L.v)}${M.unit}（${L.r.g}ランク・上位${pctTxt(L.p)}%）`+(L.age!=null?`\n反射神経年齢は ${L.age}歳 でした`:'')+`\nあなたは何${M.unit}？ #ぽちっと反射神経`;}
   let img=null;try{img=await resultImage(L);}catch(e){}
   const handled=img?await Native.shareImage(img,t):false;
   if(!handled){if(img)showSharePreview(img,t);else Native.share(t);}
@@ -927,12 +1003,13 @@ function showSharePreview(img,t){ // ブラウザで画像の共有ができな�
 /* ---------- ホームの「今日のチャレンジ」カード ---------- */
 function renderChCard(){
   chSync();
-  const c=todayCh(),M=MODES[c.v.m],left=CH_TRIES-S.ch.tries;
+  const c=todayCh(),left=CH_TRIES-S.ch.tries,MAXP=CH_N*9990;
   const days=[];for(let k=6;k>=0;k--){const d=c.d-k;days.push({d,v:S.ch.log[d]});}
-  const bars=days.map(x=>`<div class="cb"><i style="height:${x.v!=null?Math.max(8,Math.round(x.v/9990*100)):0}%"></i><span>${dayLabel(x.d).split('/')[1]}</span></div>`).join('');
+  const bars=days.map(x=>`<div class="cb"><i style="height:${x.v!=null?Math.max(8,Math.round(x.v/MAXP*100)):0}%"></i><span>${dayLabel(x.d).split('/')[1]}</span></div>`).join('');
+  const icons=c.stages.map(s=>`<div class="ci ${MODES[s.m].cls}" title="${MODES[s.m].name}"><img src="img/mode_${s.m}.png" alt=""></div>`).join('<i>›</i>');
   $('chCard').innerHTML=`<div class="chtop"><span class="chtag">今日のチャレンジ #${c.no}</span><span class="chday">${dayLabel(c.d)}・毎日0時に変わる</span></div>
-    <div class="chmain"><div class="ic ${M.cls}"><img src="img/mode_${c.v.m}.png" alt=""></div><div><div class="t">${M.name}</div><div class="d">${c.v.name}${c.v.desc?'：'+c.v.desc:''}</div></div></div>
-    <div class="chstat">${S.ch.best!=null?`今日のベスト <b>${S.ch.best.toLocaleString()}</b>pt`:'全員が同じ問題で、全国ランキングに挑戦'}${S.ch.streak>1&&S.ch.last>=c.d-1?`　🔥${S.ch.streak}日連続`:''}</div>
+    <div class="t5">今日の5種目</div><div class="chicons">${icons}</div>
+    <div class="chstat">${S.ch.best!=null?`今日のベスト <b>${S.ch.best.toLocaleString()}</b>pt`:'全員が同じ5種目で、合計ポイントの全国ランキングに挑戦'}${S.ch.streak>1&&S.ch.last>=c.d-1?`　🔥${S.ch.streak}日連続`:''}</div>
     <div class="chbars">${bars}</div>
     <div class="navrow"><button class="btn" id="bCh">${left>0?`挑戦する（あと${left}回）`:'今日は終わり・また明日'}</button><button class="btn ghost" id="bRank" style="flex:.55">🏆 ランキング</button></div>`;
   $('bCh').onclick=()=>{sfx.tap();startChallenge();};
