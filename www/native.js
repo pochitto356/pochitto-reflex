@@ -1,4 +1,4 @@
-/* ぽちっと反射神経 — ネイティブ機能の橋渡し (広告 / 課金 / 振動 / シェア / レビュー)
+/* ぽちっと反射神経 — ネイティブ機能の橋渡し (広告 / 課金 / 振動 / シェア / レビュー / 通知)
  * ぽちっと漢字の native.js をベースにしている(ATTの要求方法は 2026-09-23 の差し戻し対応済みのもの)
  *
  * ブラウザで開いたときは全部ダミー動作になるので、index.html はどちらでも同じコードで動く。
@@ -20,7 +20,7 @@
 
   var C = window.Capacitor;
   var isApp = !!(C && C.isNativePlatform && C.isNativePlatform());
-  var AdMob = null, Haptics = null, Share = null, InAppReview = null, Filesystem = null, GC = null;
+  var AdMob = null, Haptics = null, Share = null, InAppReview = null, Filesystem = null, GC = null, LN = null;
   var premium = false;
   var bannerShown = false;
   var interstitialReady = false;
@@ -44,6 +44,7 @@
     InAppReview = C.Plugins.InAppReview || null;
     Filesystem = C.Plugins.Filesystem || null;
     GC = C.Plugins.GameCenter || null; // ios-src/GameCenterPlugin.swift（アプリ内のプラグイン）
+    LN = C.Plugins.LocalNotifications || null;
     // 順番が重要: ATTの許可ダイアログ → AdMob初期化 → 課金初期化
     return requestATT().then(initAds).then(initIAP).then(function () { gcSignIn(false); }).catch(function (e) { log('init error', e); });
   }
@@ -321,6 +322,31 @@
     });
   }
 
+
+  // ---- 毎日のお知らせ（ローカル通知）-----------------------------------
+  // 端末の中で予約する通知。サーバーには何も送らない。id 101〜107 を「これから7日分」に使う
+  var NOTIF_IDS = [101, 102, 103, 104, 105, 106, 107];
+  function notifPermission() {
+    if (!isApp || !LN) return Promise.resolve(false);
+    return LN.requestPermissions().then(function (r) { return r && r.display === 'granted'; }).catch(function () { return false; });
+  }
+  function notifCancel() {
+    if (!isApp || !LN) return Promise.resolve();
+    return LN.cancel({ notifications: NOTIF_IDS.map(function (id) { return { id: id }; }) }).catch(function () {});
+  }
+  // list: [{at: Date, title, body}]（最大7件）
+  function notifPlan(list) {
+    if (!isApp || !LN) return Promise.resolve();
+    return notifCancel().then(function () {
+      return LN.checkPermissions().then(function (r) {
+        if (!r || r.display !== 'granted') return;
+        var items = list.slice(0, NOTIF_IDS.length).map(function (x, i) {
+          return { id: NOTIF_IDS[i], title: x.title, body: x.body, schedule: { at: x.at, allowWhileIdle: true } };
+        });
+        if (items.length) return LN.schedule({ notifications: items });
+      });
+    }).catch(function (e) { log('notif error', e); });
+  }
   window.Native = {
     isApp: isApp,
     init: init,
@@ -335,6 +361,9 @@
     gcShow: gcShow,
     buyPremium: buyPremium,
     restore: restore,
+    notifPermission: notifPermission,
+    notifPlan: notifPlan,
+    notifCancel: notifCancel,
     isPremium: function () { return premium; }
   };
 })();
