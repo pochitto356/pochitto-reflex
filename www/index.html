@@ -27,7 +27,9 @@ html[data-pad=neutral],html[data-pad=neutral] body{background:var(--bg2)}
   padding:calc(env(safe-area-inset-top) + 14px) 18px calc(env(safe-area-inset-bottom) + 18px)}
 .screen.on{display:flex}
 .screen>*{flex-shrink:0}
-body.has-banner .screen.bannered{padding-bottom:calc(env(safe-area-inset-bottom) + 76px)}
+/* v1.2.1: バナーが実際に出ているときだけ、その高さ分の余白をとる(--bnh は native.js から) */
+body.has-banner.bn-on .screen.bannered{padding-bottom:calc(env(safe-area-inset-bottom) + var(--bnh,62px) + 10px)}
+body.has-banner.bn-on .ractions{bottom:calc(env(safe-area-inset-bottom) + var(--bnh,62px));padding-bottom:4px}
 
 /* ---------- home ---------- */
 .logo{text-align:center;margin:14px 0 2px}
@@ -293,6 +295,24 @@ body.has-banner .screen.bannered{padding-bottom:calc(env(safe-area-inset-bottom)
   .streak{margin:6px 0 0}
 }
 
+/* v1.2.1: ホームが1画面に収まらないときは段階的に詰める(fitHome) */
+#home.fit1 .tag{display:none}
+#home.fit1 .logo{margin-top:4px}
+#home.fit1 .chcard{padding:10px 12px 8px;margin-bottom:10px}
+#home.fit1 .agecard{padding:6px 12px;margin-bottom:8px}#home.fit1 .agecard .v{font-size:22px}
+#home.fit1 .hsec{margin:2px 2px 6px}
+#home.fit1 .streak{margin:6px 0 0}
+#home.fit2 .chstat{display:none}
+#home.fit2 .modes .mode{padding:8px 6px 7px;gap:3px}
+#home.fit2 .modes .mode .ic{width:36px;height:36px;border-radius:11px}#home.fit2 .modes .mode .ic img{width:32px;height:32px}
+#home.fit2 .modes{gap:6px}
+#home.fit3 .streak{display:none}
+#home.fit3 .hbtn{width:40px;height:40px}
+#home.fit3 .chcard .navrow .btn{padding:9px 8px;font-size:14px}
+#home.fit3 .agecard .r{line-height:1.4}
+#home.fit4 .hsec{display:none}
+#home.fit4 .modes .mode .best{display:none}
+
 .grid.g3{grid-template-columns:repeat(3,1fr);width:min(72vw,300px)}
 .grid.g3 button{font-size:30px}
 .qcard .qtap{color:var(--amber);font-weight:800;font-size:15px;animation:blink2 1s infinite alternate}
@@ -450,7 +470,7 @@ const sfx={tap:()=>beep(660,.06,'triangle',.08),ok:()=>beep(880,.09,'sine'),ng:(
 function buzz(kind){if(S.haptic)Native.haptic(kind);}
 
 /* ---------- UI共通 ---------- */
-function show(id){if(id!=='play')delete document.documentElement.dataset.pad;document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));updateBanner();}
+function show(id){if(id!=='play')delete document.documentElement.dataset.pad;document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));updateBanner();if(id==='home')fitHome();}
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),1800);}
 function modal(title,body,ok,cancel,okLabel){
   $('mTitle').textContent=title;$('mBody').textContent=body||'';const row=$('mRow');row.innerHTML='';
@@ -1320,6 +1340,13 @@ $('bReset').onclick=()=>{modal('記録をリセット','すべての記録とバ
 /* ---------- 広告・課金 ---------- */
 window.onPremiumChanged=v=>{applyPremium();if(v)toast('広告を削除しました。ありがとうございます！');};
 function applyPremium(){document.body.classList.toggle('has-banner',!Native.isPremium()&&Native.isApp);if($('settings').classList.contains('on'))renderSettings();updateBanner();}
+window.onBannerSize=h=>{h=Math.round(+h||0);document.body.classList.toggle('bn-on',h>0);if(h>0)document.documentElement.style.setProperty('--bnh',h+'px');fitHome();};
+function fitHome(){
+  const s=$('home');if(!s)return;const L=['fit1','fit2','fit3','fit4'];
+  s.classList.remove(...L);if(!s.classList.contains('on'))return;
+  for(const c of L){if(s.scrollHeight<=s.clientHeight+1)break;s.classList.add(c);}
+}
+addEventListener('resize',()=>fitHome());addEventListener('load',()=>fitHome());
 function updateBanner(){
   // テスト中は絶対に出さない(誤タップ防止と、測定への影響をなくすため)
   const on=document.querySelector('.screen.on');

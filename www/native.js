@@ -107,6 +107,7 @@
       initializeForTesting: IS_TESTING
     }).then(function () {
       log('admob ready');
+      listenBanner();
       if (!premium) prepareInterstitial();
     });
   }
@@ -205,10 +206,30 @@
   }
 
   // ---- 広告の表示 -----------------------------------------------------
+  // v1.2.1: 読み込めなかったとき(在庫なし・通信エラー)は30秒後に取り直す。
+  // 実際の高さを index.html に知らせて、その分だけ下に余白をとる(window.onBannerSize)。
+  var bannerWanted = false, bannerRetry = null;
+  function bannerHeight(h) { if (typeof window.onBannerSize === 'function') window.onBannerSize(h || 0); }
+  function listenBanner() {
+    if (!AdMob || !AdMob.addListener) return;
+    try {
+      AdMob.addListener('bannerAdSizeChanged', function (info) { if (bannerShown) bannerHeight(info && info.height); });
+      AdMob.addListener('bannerAdLoaded', function () { log('banner loaded'); });
+      AdMob.addListener('bannerAdFailedToLoad', function (e) {
+        log('banner no fill', e);
+        bannerShown = false; bannerHeight(0);
+        AdMob.removeBanner().catch(function () {});
+        if (bannerRetry) clearTimeout(bannerRetry);
+        bannerRetry = setTimeout(function () { bannerRetry = null; if (bannerWanted) banner(true); }, 30000);
+      });
+    } catch (e) { log('banner listener error', e); }
+  }
   function banner(show) {
+    bannerWanted = !!show && !premium;
     if (!isApp || !AdMob) return;
     if (premium || !show) {
       if (bannerShown) { AdMob.hideBanner().catch(function () {}); bannerShown = false; }
+      bannerHeight(0);
       return;
     }
     if (bannerShown) return;
@@ -219,7 +240,11 @@
       position: 'BOTTOM_CENTER',
       margin: 0,
       isTesting: IS_TESTING
-    }).catch(function (e) { bannerShown = false; log('banner failed', e); });
+    }).catch(function (e) {
+      bannerShown = false; bannerHeight(0); log('banner failed', e);
+      if (bannerRetry) clearTimeout(bannerRetry);
+      bannerRetry = setTimeout(function () { bannerRetry = null; if (bannerWanted) banner(true); }, 30000);
+    });
   }
 
   // 結果画面から次へ進むときだけ表示。測定中は絶対に呼ばない(測定と体験を守るため)
