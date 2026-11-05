@@ -1,4 +1,4 @@
-# Codemagic CI/CD 設定 (ぽちっと反射神経 / Capacitor 7)
+# Codemagic CI/CD 設定 (反射神経テスト〔旧 ぽちっと反射神経〕 / Capacitor 7)
 # v1.2: Game Center のアプリ内プラグイン(ios-src/)をビルド時に組み込む
 # Macなしでクラウド上のMacでiOSビルド〜App Store Connectアップロードまで行う。
 #
@@ -70,7 +70,7 @@ workflows:
           plutil -replace UISupportedInterfaceOrientations -json '["UIInterfaceOrientationPortrait"]' "$PLIST"
           plutil -replace "UISupportedInterfaceOrientations~ipad" -json '["UIInterfaceOrientationPortrait","UIInterfaceOrientationPortraitUpsideDown"]' "$PLIST"
           plutil -replace UIRequiresFullScreen -bool YES "$PLIST"
-          plutil -replace CFBundleDisplayName -string "ぽちっと反射神経" "$PLIST"
+          plutil -replace CFBundleDisplayName -string "反射神経テスト" "$PLIST"
           plutil -replace GADApplicationIdentifier -string "$ADMOB_APP_ID" "$PLIST"
           plutil -replace NSUserTrackingUsageDescription -string "広告をあなたに関連性の高い内容にするために使用します。許可しなくても全種目を無料で遊べます。" "$PLIST"
           plutil -replace SKAdNetworkItems -json '[{"SKAdNetworkIdentifier":"cstr6suwn9.skadnetwork"}]' "$PLIST"
