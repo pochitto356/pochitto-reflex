@@ -1,7 +1,7 @@
 {
   "name": "pochitto-reflex",
   "version": "1.2.0",
-  "description": "反射神経テスト（旧 ぽちっと反射神経） - 反射神経4種目＋色彩感覚・記憶力の6種目で「目と脳」を測るアプリ。v1.2で今日のチャレンジ・全国ランキング",
+  "description": "反射神経テスト（旧 ぽちっと反射神経） - 6種目で「目と脳」を測るアプリ。v1.2で今日のチャレンジ（いろいろな種目から5つのお題）・全国ランキング・毎日のお知らせ",
   "private": true,
   "scripts": {
     "add:ios": "cap add ios",
@@ -17,7 +17,8 @@
     "@capacitor/filesystem": "^7.0.0",
     "@capacitor-community/admob": "^7.0.0",
     "@capacitor-community/in-app-review": "^7.0.0",
-    "cordova-plugin-purchase": "^13.12.0"
+    "cordova-plugin-purchase": "^13.12.0",
+    "@capacitor/local-notifications": "^7.0.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.0.0",

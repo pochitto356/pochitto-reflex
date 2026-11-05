@@ -27,7 +27,9 @@ html[data-pad=neutral],html[data-pad=neutral] body{background:var(--bg2)}
   padding:calc(env(safe-area-inset-top) + 14px) 18px calc(env(safe-area-inset-bottom) + 18px)}
 .screen.on{display:flex}
 .screen>*{flex-shrink:0}
-body.has-banner .screen.bannered{padding-bottom:calc(env(safe-area-inset-bottom) + 76px)}
+/* v1.2.1: バナーが実際に出ているときだけ、その高さ分の余白をとる(--bnh は native.js から) */
+body.has-banner.bn-on .screen.bannered{padding-bottom:calc(env(safe-area-inset-bottom) + var(--bnh,62px) + 10px)}
+body.has-banner.bn-on .ractions{bottom:calc(env(safe-area-inset-bottom) + var(--bnh,62px));padding-bottom:4px}
 
 /* ---------- home ---------- */
 .logo{text-align:center;margin:14px 0 2px}
@@ -71,6 +73,14 @@ body.has-banner .screen.bannered{padding-bottom:calc(env(safe-area-inset-bottom)
 .tgrid.mem i.ans{background:transparent;outline:3px dashed #ffd34d}
 .tgrid i.miss{outline:4px solid var(--stop);outline-offset:-2px}
 .tgrid.mem i.miss{background:var(--stop)}
+.tgrid.mem i.blue{background:#6fb6ff;border-color:#6fb6ff;box-shadow:0 0 22px rgba(111,182,255,.6)}
+.tgrid.mem i.done{background:var(--go);border-color:var(--go);opacity:.7}
+.memtitle{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;animation:memin .3s ease-out}
+.memtitle small{font-size:13px;color:var(--sub);font-weight:700;letter-spacing:.1em}
+.memtitle>b{font-size:44px;color:#ffd34d;letter-spacing:.1em}
+.memtitle span b{font-size:inherit;letter-spacing:0}
+.memtitle span{font-size:15px;color:var(--ink);line-height:1.6}
+@keyframes memin{from{opacity:0;transform:scale(1.15)}to{opacity:1;transform:none}}
 .hearts{font-size:14px;letter-spacing:2px}
 .navrow{display:flex;gap:10px;margin-top:4px}
 .btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;font-family:inherit;
@@ -247,6 +257,66 @@ body.has-banner .screen.bannered{padding-bottom:calc(env(safe-area-inset-bottom)
 #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 90px);transform:translateX(-50%);background:var(--ink);color:var(--bg);
   padding:10px 16px;border-radius:999px;font-size:14px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60;white-space:nowrap}
 #toast.on{opacity:1}
+
+/* ---------- 2026-11-04 レイアウト調整：ホームを1画面に／結果のボタンを常に見える位置に ---------- */
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+.modes .mode{flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;gap:6px;padding:12px 8px 10px;margin:0;min-height:0}
+.modes .mode .ic{width:46px;height:46px;border-radius:14px}
+.modes .mode .ic img{width:40px;height:40px}
+.modes .mode .t{font-size:12.5px;line-height:1.3;word-break:keep-all}
+.modes .mode .t span{display:block;width:max-content;margin:3px auto 0}
+.modes .mode .d{display:none}
+.modes .mode .best{margin:0;text-align:center;font-size:10px;line-height:1.3}
+.modes .mode .best b{font-size:15px;display:inline;margin-right:2px}
+.agecard{padding:10px 14px}
+.agecard .v{font-size:26px}
+.ractions{position:sticky;bottom:0;margin:10px -18px 0;padding:10px 18px calc(env(safe-area-inset-bottom) + 4px);
+  background:linear-gradient(rgba(14,19,34,0),var(--bg) 22%);z-index:2}
+.ractions .btn{margin:0 0 8px}
+@media (max-height:740px){
+  .logo{margin-top:6px}.logo .mk{font-size:24px}.tag{margin-bottom:10px;font-size:12px}
+  .chcard{padding:10px 12px 8px;margin-bottom:10px}.chbars{height:30px}
+  .hsec{margin:4px 2px 6px}
+  .modes .mode{padding:9px 6px 8px;gap:4px}.modes .mode .ic{width:38px;height:38px}.modes .mode .ic img{width:34px;height:34px}
+  .rval{font-size:56px}.rank .g{width:64px;height:64px}.rank{margin:8px 0 4px}.stats{margin:8px 0 4px;gap:8px}.stats b{font-size:18px}
+}
+
+.htop{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.htop .logo{flex:1;min-width:0}
+.htop .logo .mk{font-size:24px;gap:8px}.htop .logo .dot{width:16px;height:16px}
+.hbtn{flex:none;width:46px;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);
+  font-size:18px;line-height:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer}
+.hbtn span{font-size:9px;color:var(--sub);font-weight:700}
+
+@media (max-height:700px){
+  #home .tag{display:none}
+  .agecard{padding:6px 12px;margin-bottom:8px}.agecard .v{font-size:22px}
+  .chstat{margin:6px 0 4px}.chcard .navrow .btn{padding:10px 8px}
+  .streak{margin:6px 0 0}
+}
+
+/* v1.2.1: ホームが1画面に収まらないときは段階的に詰める(fitHome) */
+#home.fit1 .tag{display:none}
+#home.fit1 .logo{margin-top:4px}
+#home.fit1 .chcard{padding:10px 12px 8px;margin-bottom:10px}
+#home.fit1 .agecard{padding:6px 12px;margin-bottom:8px}#home.fit1 .agecard .v{font-size:22px}
+#home.fit1 .hsec{margin:2px 2px 6px}
+#home.fit1 .streak{margin:6px 0 0}
+#home.fit2 .chstat{display:none}
+#home.fit2 .modes .mode{padding:8px 6px 7px;gap:3px}
+#home.fit2 .modes .mode .ic{width:36px;height:36px;border-radius:11px}#home.fit2 .modes .mode .ic img{width:32px;height:32px}
+#home.fit2 .modes{gap:6px}
+#home.fit3 .streak{display:none}
+#home.fit3 .hbtn{width:40px;height:40px}
+#home.fit3 .chcard .navrow .btn{padding:9px 8px;font-size:14px}
+#home.fit3 .agecard .r{line-height:1.4}
+#home.fit4 .hsec{display:none}
+#home.fit4 .modes .mode .best{display:none}
+
+.grid.g3{grid-template-columns:repeat(3,1fr);width:min(72vw,300px)}
+.grid.g3 button{font-size:30px}
+.qcard .qtap{color:var(--amber);font-weight:800;font-size:15px;animation:blink2 1s infinite alternate}
+@keyframes blink2{from{opacity:1}to{opacity:.45}}
 </style>
 </head>
 <body>
@@ -254,19 +324,19 @@ body.has-banner .screen.bannered{padding-bottom:calc(env(safe-area-inset-bottom)
 
 <!-- ===== HOME ===== -->
 <section class="screen bannered on" id="home">
-  <div class="logo"><span class="mk"><span class="dot"></span>反射神経テスト</span></div>
-  <div class="tag">反射神経・色彩感覚・記憶力。あなたの「目と脳」は何ランク？</div>
+  <div class="htop"><button class="hbtn" id="bRecords" aria-label="記録・バッジ">📈<span>記録</span></button><div class="logo"><span class="mk"><span class="dot"></span>反射神経テスト</span></div><button class="hbtn" id="bSettings" aria-label="設定">⚙️<span>設定</span></button></div>
+  <div class="tag">あなたの「目と脳」は何ランク？</div>
   <div class="chcard" id="chCard"></div>
   <div class="agecard" id="ageCard"></div>
-  <div class="hsec">反射神経</div>
+  <div class="hsec">6つのテスト</div>
+  <div class="modes">
   <button class="mode" data-mode="simple"><div class="ic simple"><img src="img/mode_simple.png" alt=""></div><div><div class="t">反応速度テスト</div><div class="d">緑になった瞬間にタップ。<br>5回の平均で判定</div></div><div class="best" id="best-simple"></div></button>
   <button class="mode" data-mode="gonogo"><div class="ic gonogo"><img src="img/mode_gonogo.png" alt=""></div><div><div class="t">がまんテスト</div><div class="d">緑の●はタップ、赤の■はがまん。<br>速さと判断力を同時に</div></div><div class="best" id="best-gonogo"></div></button>
   <button class="mode" data-mode="color"><div class="ic color"><img src="img/mode_color.png" alt=""></div><div><div class="t">色ことばテスト</div><div class="d">文字の「色」を選べ。<br>脳がだまされる20問</div></div><div class="best" id="best-color"></div></button>
   <button class="mode" data-mode="numbers"><div class="ic numbers"><img src="img/mode_numbers.png" alt=""></div><div><div class="t">数字タッチ</div><div class="d">1から25まで順番にタッチ。<br>視野の広さと集中力</div></div><div class="best" id="best-numbers"></div></button>
-  <div class="hsec">目と記憶</div>
   <button class="mode" data-mode="hue"><div class="ic hue"><img src="img/mode_hue.png" alt=""></div><div><div class="t">色彩感覚テスト <span style="font-size:10px;background:var(--amber);color:#3a2600;border-radius:6px;padding:1px 5px;vertical-align:2px">NEW</span></div><div class="d">1つだけ色がちがうマスを探せ。<br>色の差はどんどん小さくなる</div></div><div class="best" id="best-hue"></div></button>
-  <button class="mode" data-mode="memory"><div class="ic memory"><img src="img/mode_memory.png" alt=""></div><div><div class="t">記憶力テスト <span style="font-size:10px;background:var(--amber);color:#3a2600;border-radius:6px;padding:1px 5px;vertical-align:2px">NEW</span></div><div class="d">光った順番どおりにタップ。<br>1つずつ長くなる</div></div><div class="best" id="best-memory"></div></button>
-  <div class="navrow"><button class="btn ghost" id="bRecords">📈 記録・バッジ</button><button class="btn ghost" id="bSettings">⚙️ 設定</button></div>
+  <button class="mode" data-mode="memory"><div class="ic memory"><img src="img/mode_memory.png" alt=""></div><div><div class="t">記憶力テスト <span style="font-size:10px;background:var(--amber);color:#3a2600;border-radius:6px;padding:1px 5px;vertical-align:2px">NEW</span></div><div class="d">順番・逆順・一瞬・おじゃま。<br>毎回ちがうお題で記憶力を測る</div></div><div class="best" id="best-memory"></div></button>
+  </div>
   <div class="streak" id="streak"></div>
 </section>
 
@@ -288,8 +358,8 @@ body.has-banner .screen.bannered{padding-bottom:calc(env(safe-area-inset-bottom)
   <div class="badgepop" id="rBadge"></div>
   <div class="gcline" id="rGc"></div>
   <div class="note" id="rNote"></div>
-  <button class="btn" id="bAgain">もう一度</button>
-  <div class="navrow"><button class="btn blue" id="bShare">結果をシェア</button><button class="btn ghost" id="bHome">ホーム</button></div>
+  <div class="ractions"><button class="btn" id="bAgain">もう一度</button>
+  <div class="navrow"><button class="btn blue" id="bShare">結果をシェア</button><button class="btn ghost" id="bHome">ホーム</button></div></div>
 </section>
 
 <!-- ===== RECORDS ===== -->
@@ -309,6 +379,8 @@ body.has-banner .screen.bannered{padding-bottom:calc(env(safe-area-inset-bottom)
   <div class="list">
     <div class="item" id="swSound">効果音<div class="sw"></div></div>
     <div class="item" id="swHaptic">振動（対応機種のみ）<div class="sw"></div></div>
+    <div class="item" id="swNotif"><div>毎日のお知らせ<br><span style="font-size:11px;color:var(--sub)">今日のチャレンジのお題をお知らせ</span></div><div class="sw"></div></div>
+    <div class="item"><label for="notifTime">お知らせの時刻</label><input type="time" id="notifTime" value="19:00" style="font:inherit;color:var(--ink);background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:4px 8px"></div>
   </div>
   <div class="sec">広告なし</div>
   <div class="list">
@@ -345,11 +417,12 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 /* ---------- 保存データ ---------- */
 const KEY='pr_save_v1';
 const DEF={sound:true,haptic:true,best:{},hist:{simple:[],gonogo:[],color:[],numbers:[],hue:[],memory:[]},plays:0,badges:{},
-  lastDay:'',streak:0,lastAge:null,bestTrial:null,doneSinceAd:0,ch:null};
+  lastDay:'',streak:0,lastAge:null,bestTrial:null,doneSinceAd:0,ch:null,notif:null};
 let S;
 try{S=Object.assign({},DEF,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){S=Object.assign({},DEF);}
 S.hist=Object.assign({simple:[],gonogo:[],color:[],numbers:[],hue:[],memory:[]},S.hist||{});
 S.ch=Object.assign({day:-1,tries:0,best:null,bestV:null,log:{},streak:0,last:-99},S.ch||{});
+S.notif=Object.assign({on:false,asked:false,time:'19:00'},S.notif||{});
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 
 /* ---------- モード定義 ----------
@@ -361,7 +434,7 @@ const MODES={
   color:{name:'色ことばテスト',unit:'ms',mean:900,sd:170,icon:'色',cls:'color'},
   numbers:{name:'数字タッチ',unit:'秒',mean:21,sd:4.5,icon:'25',cls:'numbers'},
   hue:{name:'色彩感覚テスト',unit:'ステージ',mean:17,sd:6,cls:'hue',hi:true},
-  memory:{name:'記憶力テスト',unit:'個',mean:9,sd:3,cls:'memory',hi:true},
+  memory:{name:'記憶力テスト',unit:'個',mean:7.5,sd:2.5,cls:'memory',hi:true},
 };
 const better=(m,a,b)=>MODES[m].hi?a>b:a<b;
 const fmt=(m,v)=>m==='numbers'?v.toFixed(2):String(Math.round(v));
@@ -397,7 +470,7 @@ const sfx={tap:()=>beep(660,.06,'triangle',.08),ok:()=>beep(880,.09,'sine'),ng:(
 function buzz(kind){if(S.haptic)Native.haptic(kind);}
 
 /* ---------- UI共通 ---------- */
-function show(id){if(id!=='play')delete document.documentElement.dataset.pad;document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));updateBanner();}
+function show(id){if(id!=='play')delete document.documentElement.dataset.pad;document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));updateBanner();if(id==='home')fitHome();}
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),1800);}
 function modal(title,body,ok,cancel,okLabel){
   $('mTitle').textContent=title;$('mBody').textContent=body||'';const row=$('mRow');row.innerHTML='';
@@ -459,7 +532,7 @@ function startMode(m,ch){
     color:['色ことばテスト','「あか」「あお」などの文字が出ます。<br>文字の<b>意味ではなく、文字の色</b>のボタンを押してください。<br>20問。ミス1回につき+300msのペナルティ。'],
     numbers:['数字タッチ','1から25まで、順番にできるだけ速くタッチ。<br>まちがえると+1秒。'],
     hue:['色彩感覚テスト','並んだマスの中から、<b>1つだけ色がちがうマス</b>をタップ。<br>ステージが進むほど色の差が小さくなります。<br>まちがえるか10秒たつとライフが1つ減ります（ライフ3）。'],
-    memory:['記憶力テスト','マスが1つずつ<b style="color:#ffd34d">光ります</b>。<br>光った順番どおりにタップしてください。<br>成功するたびに1つ長くなります。まちがえるとライフが1つ減ります（ライフ3）。'],
+    memory:['記憶力テスト','レベルごとに<b style="color:#ffd34d">お題</b>が変わります。<br>順番：光った順にタップ／逆順：反対からタップ<br>一瞬：同時に光ったマスを全部タップ／おじゃま：青は押さない<br>クリアするたびに1つ長くなり、並びも毎回新しくなります。まちがえるとライフが1つ減ります（ライフ3）。'],
   }[m];
   if(ch){const v=ch.v;texts[1]=texts[1].replace('12問',(v.qn||12)+'問').replace('20問',(v.qn||20)+'問').replace(/ライフ3）/g,'ライフ'+(v.lives||3)+'）').replace('5回の平均',(v.n||5)+'回の平均').replace('1から25まで',v.rev?'25から1まで':'1から25まで');}
   const chHead=ch?`<div class="chtag">今日のチャレンジ #${ch.no}・第${ch.k+1}種目 / ${CH_N}</div>`:'';
@@ -711,39 +784,95 @@ function hueMiss(i,timeout){
   later(()=>finish('hue',G.score,{stats:[['見抜いた最小の色の差',G.minD!=null?fmtD(G.minD):'—'],['ミス',G.miss+'回']],trials:[]}),1200);
 }
 
-/* ---------- 6. 記憶力テスト(順番記憶) ----------
- * 3×3のマスが1つずつ光る。同じ順番でタップ。成功で1つ長くなる(3から)。
- * ミスでライフ-1、同じ順番をもう一度見せる。スコア=覚えられた最長の長さ */
+/* ---------- 6. 記憶力テスト(毎回ちがう進行) ----------
+ * レベルごとに「お題」が変わる。長さ = レベル+2（レベル1は3個）。毎回新しい並びを出す（前の並びに1つ足すのではない）
+ *  順番：光った順にタップ ／ 逆順：光った順の反対からタップ
+ *  一瞬：いくつかのマスが同時に光る→どれが光ったか全部タップ（順番は自由）
+ *  おじゃま：黄色の順番だけ覚える。青く光るマスはタップしない
+ * レベル1〜2は「順番」で慣らし、レベル3からお題が毎回変わる（同じお題が2回続かない）
+ * ミスでライフ-1、同じレベルを別の並びでやり直し。スコア=クリアした最長の長さ */
 const PENTA=[0,2,4,7,9];
 const tileFreq=i=>330*Math.pow(2,(Math.floor(i/5)*12+PENTA[i%5])/12);
-const memStep=prev=>{const n=G&&G.gs?G.gs*G.gs:9;let i;do{i=Math.floor(R()*n);}while(i===prev);return i;};
-function memStart(){G.gs=(G.v&&G.v.gs)||3;G.seq=[];for(let k=0;k<3;k++)G.seq.push(memStep(G.seq[k-1]));const L=(G.v&&G.v.lives)||3;Object.assign(G,{lives:L,maxL:L,score:0,miss:0});memPlay();}
+const MEM_KINDS={
+  seq:{t:'順番',d:'光った順にタップ'},
+  rev:{t:'逆順',d:'光った順の<b>反対から</b>タップ'},
+  flash:{t:'一瞬',d:'<b>同時に</b>光ったマスを全部タップ（順番は自由）'},
+  decoy:{t:'おじゃま',d:'<b style="color:#ffd34d">黄色</b>の順番だけ。<b style="color:#6fb6ff">青</b>はタップしない'},
+};
+function memPick(n,len,ban){const out=[];let prev=-1;while(out.length<len){const i=Math.floor(R()*n);if(i===prev||(ban&&ban.has(i)))continue;out.push(i);prev=i;}return out;}
+function memDistinct(n,len){const a=shuffle([...Array(n).keys()],R);return a.slice(0,Math.min(len,n));}
+function memStart(){G.gs=(G.v&&G.v.gs)||3;const L=(G.v&&G.v.lives)||3;Object.assign(G,{lives:L,maxL:L,score:0,miss:0,lv:1,lastKind:null});memLevel();}
+function memLevel(){
+  if(!G)return;
+  const n=G.gs*G.gs,len=G.lv+2;
+  let kind='seq';
+  if(G.lv>=3){const ks=Object.keys(MEM_KINDS).filter(k=>k!==G.lastKind&&!(k==='flash'&&len>n-1));kind=ks[Math.floor(R()*ks.length)];}
+  G.kind=kind;G.len=len;
+  if(kind==='flash'){G.seq=memDistinct(n,len);G.need=new Set(G.seq);G.got=new Set();G.show=[G.seq];}
+  else if(kind==='decoy'){
+    G.seq=memPick(n,len);
+    const dn=Math.min(3,1+Math.floor(len/3)),used=new Set(G.seq),free=[...Array(n).keys()].filter(i=>!used.has(i));
+    const dec=shuffle(free,R).slice(0,dn);
+    // 青(おじゃま)を黄色のあいだにはさむ
+    const steps=G.seq.map(i=>({i,blue:false}));dec.forEach(i=>steps.splice(1+Math.floor(R()*steps.length),0,{i,blue:true}));
+    G.steps=steps;G.decoys=new Set(dec);
+  }else{G.seq=memPick(n,len);}
+  G.answer=kind==='rev'?G.seq.slice().reverse():G.seq;
+  // お題の予告（レベル3以降、お題が変わるたびに大きく出す）
+  const K=MEM_KINDS[kind];
+  setProg(`レベル ${G.lv}　${K.t}`);
+  setPad('neutral',`<div class="memtitle"><small>レベル ${G.lv}・${len}個</small><b>${K.t}</b><span>${K.d}</span></div>`);
+  later(memPlay,G.lv>=3?1500:900);
+}
 function memPlay(){
   if(!G)return;
   G.state='show';G.pos=0;
-  setProg(`長さ ${G.seq.length}`);
-  setPad('neutral',`<div class="tinfo watch" id="tinfo">👀 よく見て…　${hearts(G.lives,G.maxL)}</div>
+  const K=MEM_KINDS[G.kind];
+  setPad('neutral',`<div class="tinfo watch" id="tinfo">👀 ${K.t}：よく見て…　${hearts(G.lives,G.maxL)}</div>
     <div class="tgrid mem" id="tgrid" style="grid-template-columns:repeat(${G.gs},1fr)">${Array.from({length:G.gs*G.gs},(_,i)=>`<i data-i="${i}"></i>`).join('')}</div><div class="fb" id="fb"></div>`);
   pad.querySelectorAll('#tgrid i').forEach(el=>el.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();memTap(+el.dataset.i,el);},{passive:false}));
-  const on=Math.max(300,560-G.seq.length*16),off=Math.round(on*.35);let k=0;
+  const goInput=()=>{G.state='input';G.inT=now();const t=$('tinfo');t.className='tinfo go';
+    t.innerHTML=`👆 ${G.kind==='rev'?'反対の順番で':G.kind==='flash'?'光ったマスを全部':G.kind==='decoy'?'黄色だけ順番に':'同じ順番で'}タップ　`+hearts(G.lives,G.maxL);};
+  const tiles=()=>$('tgrid').children;
+  if(G.kind==='flash'){
+    const dur=700+G.len*170;
+    later(()=>{if(!G||G.state!=='show')return;G.seq.forEach(i=>tiles()[i].classList.add('lit'));beep(660,.25,'triangle',.14);
+      later(()=>{G.seq.forEach(i=>tiles()[i].classList.remove('lit'));goInput();},dur);},650);
+    return;
+  }
+  const steps=G.kind==='decoy'?G.steps:G.seq.map(i=>({i,blue:false}));
+  const on=Math.max(300,560-G.len*16),off=Math.round(on*.35);let k=0;
   const step=()=>{if(!G||G.state!=='show')return;
-    if(k>=G.seq.length){G.state='input';const t=$('tinfo');t.className='tinfo go';t.innerHTML='👆 同じ順番でタップ　'+hearts(G.lives,G.maxL);return;}
-    const i=G.seq[k++],el=$('tgrid').children[i];el.classList.add('lit');beep(tileFreq(i),.22,'triangle',.14);
-    later(()=>{el.classList.remove('lit');later(step,off);},on);};
+    if(k>=steps.length){goInput();return;}
+    const st=steps[k++],el=tiles()[st.i];el.classList.add(st.blue?'blue':'lit');
+    st.blue?beep(196,.18,'sine',.1):beep(tileFreq(st.i),.22,'triangle',.14);
+    later(()=>{el.classList.remove('lit','blue');later(step,off);},on);};
   later(step,650);
+}
+function memFail(i,el,showAns){
+  clearTimers();G.state='done';G.lives--;G.miss++;sfx.ng();buzz('heavy');
+  el.classList.add('miss');if(showAns!=null)$('tgrid').children[showAns].classList.add('ans');
+  if(G.qmem){const got=G.kind==='flash'?G.got.size:G.pos;later(()=>chAnswer(Math.round(QMAX*.5*got/G.len),`${got}/${G.len}個`),900);return;}
+  gngFb(G.kind==='decoy'&&G.decoys.has(i)?'それは青（おじゃま）':'ざんねん',false);
+  if(G.lives>0){later(memLevel,1400);return;}
+  later(()=>finish('memory',G.score,{stats:[['覚えられた最長',G.score+'個'],['到達レベル',G.lv],['ミス',G.miss+'回']],trials:[]}),1400);
 }
 function memTap(i,el){
   if(!G||G.state!=='input')return;
-  if(i!==G.seq[G.pos]){
-    clearTimers();G.state='done';G.lives--;G.miss++;sfx.ng();buzz('heavy');
-    el.classList.add('miss');$('tgrid').children[G.seq[G.pos]].classList.add('ans');gngFb('ざんねん',false);
-    if(G.lives>0){later(memPlay,1400);return;}
-    later(()=>finish('memory',G.score,{stats:[['覚えられた最長',G.score+'個'],['ミス',G.miss+'回']],trials:[]}),1400);return;
+  const pulse=()=>{beep(tileFreq(i),.22,'triangle',.14);buzz('light');el.classList.remove('tap');void el.offsetWidth;el.classList.add('tap');};
+  if(G.kind==='flash'){
+    if(!G.need.has(i)){const rest=[...G.need].find(x=>!G.got.has(x));memFail(i,el,rest);return;}
+    if(G.got.has(i))return;
+    G.got.add(i);pulse();el.classList.add('done');
+    if(G.got.size<G.need.size)return;
+  }else{
+    if(i!==G.answer[G.pos]){memFail(i,el,G.answer[G.pos]);return;}
+    G.pos++;pulse();setTimeout(()=>el.classList.remove('tap'),200);
+    if(G.pos<G.answer.length)return;
   }
-  G.pos++;beep(tileFreq(i),.22,'triangle',.14);buzz('light');
-  el.classList.remove('tap');void el.offsetWidth;el.classList.add('tap');setTimeout(()=>el.classList.remove('tap'),200);
-  if(G.pos>=G.seq.length){G.state='done';G.score=G.seq.length;gngFb('クリア！',true);
-    G.seq.push(memStep(G.seq[G.seq.length-1]));later(memPlay,850);}
+  G.state='done';G.score=G.len;gngFb('クリア！',true);
+  if(G.qmem){const sec=(now()-G.inT)/1000;later(()=>chAnswer(qPts(true,.6+.4*lin(sec,G.len*.45,G.len*1.6)),`${G.len}/${G.len}個 ${sec.toFixed(1)}秒`),500);return;}
+  G.lastKind=G.kind;G.lv++;later(memLevel,850);
 }
 
 /* =========================================================
@@ -828,28 +957,39 @@ $('bHome').onclick=()=>{sfx.tap();adThen(renderHome);};
 $('bShare').onclick=()=>{sfx.tap();if(last)shareResult(last);};
 
 /* =========================================================
- *  今日のチャレンジ（日替わり・5種目・全員同じ問題）
+ *  今日のチャレンジ（日替わり・いろいろな種目から1問ずつ5問・全員同じ問題）
  *  日本時間の0時に切り替わる。6種目から5つを選び、それぞれ2つのルールのどちらかで出す。
  *  種目の順番・ルール・問題は日付で決まるので全員同じ。1日3回まで挑戦でき、
- *  5種目の合計ポイント(最大49,950)のベストが今日の記録(Game Centerの今日のランキング)。
+ *  5問の合計ポイント(1問2,000・最大10,000)のベストが今日の記録(Game Centerの今日のランキング)。
  * ========================================================= */
 const CH_TRIES=3,CH_N=5;
 const DAY0=Date.UTC(2026,9,27,15,0,0); // 2026-10-28 00:00(日本時間) = #1
-// 1種目あたり30秒〜1分で終わるよう、通常より短いルールにしている
-const DAILY={
-  simple:[{name:'5回勝負'},{name:'3回の一発勝負',n:3}],
-  gonogo:[{name:'8問',qn:8,nogo:3},{name:'がまん多め',desc:'8問中4問が赤の■',qn:8,nogo:4,mean:440}],
-  color:[{name:'ひらがな10問',qn:10},{name:'漢字10問',desc:'「赤」「青」の漢字で出題',qn:10,kanji:true,mean:950}],
-  numbers:[{name:'1→25'},{name:'逆順 25→1',desc:'25から1へ順番にタッチ',rev:true,mean:23}],
-  hue:[{name:'ライフ2',lives:2,mean:14,sd:6},{name:'一発勝負',desc:'1回まちがえたら終わり',lives:1,mean:11,sd:5}],
-  memory:[{name:'3×3・ライフ2',lives:2,mean:8,sd:3},{name:'4×4・一発勝負',desc:'マスが16個・ライフ1',gs:4,lives:1,mean:6.5,sd:2.5}],
+// 今日のチャレンジ = いろいろな種目から1問ずつ、合計5問（2026-11-04 変更）
+// 1問は数秒〜15秒。問題（種目・順番・難しさ・配置）は日付と挑戦回数で決まり、全員同じ
+const QMAX=2000; // 1問の満点。5問で10,000pt
+const QT={
+  simple:{name:'反応速度',desc:'緑になった瞬間にタップ（1回勝負）'},
+  gonogo:{name:'がまん',desc:'●はタップ、■はがまん（3回）'},
+  color:{name:'色ことば',desc:'文字の「色」のボタンを押す（1問）'},
+  numbers:{name:'数字タッチ',desc:'1→9を順番にタッチ'},
+  hue:{name:'色彩感覚',desc:'1つだけ色がちがうマスを探す'},
+  memory:{name:'記憶力',desc:'光ったマスを覚えてタップ'},
 };
+const MEM_Q={seq:{len:6,t:'順番',d:'光った6マスを同じ順番で'},rev:{len:5,t:'逆順',d:'光った5マスを反対の順番で'},flash:{len:6,t:'一瞬',d:'同時に光った6マスを全部'},decoy:{len:5,t:'おじゃま',d:'黄色5マスの順番だけ（青は押さない）'}};
 function dayIdx(t){return Math.floor(((t||Date.now())-DAY0)/86400000);}
 function dayLabel(d){const t=new Date(DAY0+d*86400000+9*3600000);return (t.getUTCMonth()+1)+'/'+t.getUTCDate();}
 function chOf(d){
   const rng=seeded(9973+d*7919);
-  const modes=shuffle(Object.keys(DAILY),rng).slice(0,CH_N);
-  const stages=modes.map(m=>({m,v:DAILY[m][rng()<.5?0:1]}));
+  const modes=shuffle(Object.keys(QT),rng).slice(0,CH_N);
+  const stages=modes.map(m=>{
+    const q={m};
+    if(m==='numbers'){q.rev=rng()<.5;q.label=q.rev?'9→1を逆順にタッチ':'1→9を順番にタッチ';}
+    else if(m==='color'){q.kanji=rng()<.5;q.label=q.kanji?'漢字の「色」のボタンを押す':'文字の「色」のボタンを押す';}
+    else if(m==='hue'){q.stage=10+Math.floor(rng()*5);q.label=`${hueSize(q.stage)}×${hueSize(q.stage)}マス・色の差${fmtD(hueDelta(q.stage))}`;}
+    else if(m==='memory'){q.kind=['seq','rev','flash','decoy'][Math.floor(rng()*4)];q.label=`${MEM_Q[q.kind].t}：${MEM_Q[q.kind].d}`;}
+    else q.label=QT[m].desc;
+    return {m,v:{name:QT[m].name+'　'+q.label},q};
+  });
   return {d,no:d+1,stages,seed:(Math.imul(d+1,2654435761)>>>0)};
 }
 const todayCh=()=>chOf(dayIdx());
@@ -869,63 +1009,154 @@ function startChallenge(){
   CH={c,i:0,res:[],tryNo:S.ch.tries};
   S.ch.tries++;save(); // 途中でやめても1回分(悪い回だけやめるのを防ぐ)
   show('play');setProg('');
-  const list=c.stages.map((s,k)=>`<div class="chrow"><span class="n">${k+1}</span><div class="ic ${MODES[s.m].cls}"><img src="img/mode_${s.m}.png" alt=""></div><div><b>${MODES[s.m].name}</b><span>${s.v.name}</span></div></div>`).join('');
-  setPad('neutral',`<div class="howto chintro"><div class="chtag">今日のチャレンジ #${c.no}（${dayLabel(c.d)}）</div><h2>今日の5種目</h2>
-    <div class="chlist">${list}</div><p>全員が同じ問題・同じ順番。5種目の合計ポイントで全国ランキングに挑戦します。<br>1日${CH_TRIES}回まで（これが${CH.tryNo+1}回目）。途中でやめても1回と数えます。</p>
+  const list=c.stages.map((s,k)=>`<div class="chrow"><span class="n">${k+1}</span><div class="ic ${MODES[s.m].cls}"><img src="img/mode_${s.m}.png" alt=""></div><div><b>${QT[s.m].name}</b><span>${s.q.label}</span></div></div>`).join('');
+  setPad('neutral',`<div class="howto chintro"><div class="chtag">今日のチャレンジ #${c.no}（${dayLabel(c.d)}）</div><h2>今日のお題</h2>
+    <div class="chlist">${list}</div><p>いろいろな種目から1つずつ、5つのお題。全員が同じ問題・同じ順番で、1つ2,000ptの合計（最大10,000pt）で全国ランキングに挑戦します。<br>1日${CH_TRIES}回まで（これが${CH.tryNo+1}回目）。途中でやめても1回と数えます。</p>
     <button class="btn" id="bChGo">はじめる</button></div>`);
   G={mode:'chintro'};G.onPad=null;
-  $('bChGo').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();sfx.tap();chStage();},{passive:false});
+  $('bChGo').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();sfx.tap();chQuestion();},{passive:false});
 }
-function chStage(){
-  const s=CH.c.stages[CH.i];
-  startMode(s.m,{no:CH.c.no,d:CH.c.d,v:s.v,k:CH.i,seed:(CH.c.seed+CH.i*104729+CH.tryNo*7919)>>>0});
+const lin=(x,good,bad)=>clamp((bad-x)/(bad-good),0,1);
+const qPts=(ok,r)=>ok?Math.round(QMAX*(.15+.85*r)):0;
+// 問題のカード → タップで開始
+function chQuestion(){
+  if(!CH)return;
+  const st=CH.c.stages[CH.i],M=MODES[st.m];
+  clearTimers();R=seeded((CH.c.seed+CH.i*104729+CH.tryNo*7919)>>>0);
+  G={mode:'chq',q:st.q,m:st.m};
+  show('play');setProg(`お題 ${CH.i+1} / ${CH_N}`);
+  setPad('neutral',`<div class="howto qcard"><div class="chtag">お題 ${CH.i+1} / ${CH_N}</div><div class="ic ${M.cls}"><img src="img/mode_${st.m}.png" alt="" style="width:60px;height:60px"></div>
+    <h2>${QT[st.m].name}</h2><p>${st.q.label}</p><div class="qtap">画面をタップでスタート</div></div>`);
+  later(()=>{if(G&&G.mode==='chq')G.onPad=()=>{G.onPad=null;sfx.tap();({simple:qSimple,gonogo:qGng,color:qColor,numbers:qNum,hue:qHue,memory:qMem})[st.m](st.q);};},350);
 }
-function finishChallengeStage(ch,m,v,extra){
-  const {pts,p}=chPoints(m,ch.v,v);
-  CH.res.push({m,v:ch.v,val:v,pts,p});
+function chAnswer(pts,label){
+  if(!CH)return;
+  clearTimers();
+  const st=CH.c.stages[CH.i];
+  CH.res.push({m:st.m,label,pts,q:st.q});
   const total=CH.res.reduce((a,b)=>a+b.pts,0);
-  if(CH.i<CH_N-1){
-    const M=MODES[m],nx=CH.c.stages[CH.i+1],NM=MODES[nx.m];
-    show('play');setProg(`${CH.i+1} / ${CH_N} 種目`);
-    setPad('neutral',`<div class="howto chmid"><div class="chtag">第${CH.i+1}種目 おわり</div>
-      <div class="mv">${fmt(m,v)}<small>${M.unit}</small></div><div class="mp">+${pts.toLocaleString()} pt</div>
-      <div class="mt">合計 <b>${total.toLocaleString()}</b> pt</div>
-      <div class="chrow next"><span class="n">${CH.i+2}</span><div class="ic ${NM.cls}"><img src="img/mode_${nx.m}.png" alt=""></div><div><b>つぎは ${NM.name}</b><span>${nx.v.name}</span></div></div>
-      <button class="btn" id="bChNext">つぎの種目へ</button></div>`);
-    G={mode:'chmid'};G.onPad=null;
-    $('bChNext').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();sfx.tap();CH.i++;chStage();},{passive:false});
-    return;
-  }
-  finishChallenge();
+  G={mode:'chmid'};G.onPad=null;
+  pts>0?sfx.ok():sfx.ng();
+  setPad('neutral',`<div class="howto chmid"><div class="chtag">お題 ${CH.i+1}</div><div class="mv" style="font-size:40px">${label}</div>
+    <div class="mp">+${pts.toLocaleString()} pt</div><div class="mt">合計 <b>${total.toLocaleString()}</b> pt</div></div>`);
+  later(()=>{if(!CH)return;CH.i++;CH.i<CH_N?chQuestion():finishChallenge();},1300);
+}
+// 1. 反応速度（1回）
+function qSimple(){
+  G.state='wait';setPad('wait',`<div class="big">待って…</div><div class="hint">緑になったらタップ</div>`);
+  later(()=>{if(!G||G.state!=='wait')return;G.state='go';G.goT=null;setPad('go',`<div class="big">タップ！</div>`);markShown(t=>{if(G)G.goT=t;});
+    later(()=>{if(G&&G.state==='go'){G.state='x';chAnswer(0,'時間切れ');}},1500);},rnd(1400,3600));
+  G.onPad=e=>{const t=tapTime(e);
+    if(G.state==='wait'){G.state='x';sfx.fly();buzz('heavy');chAnswer(0,'フライング');return;}
+    if(G.state==='go'){const rt=t-(G.goT!=null?G.goT:t);G.state='x';
+      if(rt<100){chAnswer(0,'見込み押し');return;}
+      buzz('light');chAnswer(qPts(true,lin(rt,180,500)),Math.round(rt)+'ms');}};
+}
+// 2. がまん（3回。●を1回以上ふくむ）
+function qGng(){
+  const seq=shuffle(['go','stop',R()<.5?'go':'stop']);
+  let i=0,score=0,ok=0;
+  const next=()=>{
+    if(!G)return;
+    if(i>=seq.length){chAnswer(Math.round(QMAX*score/seq.length),`${ok}/${seq.length} 成功`);return;}
+    G.state='wait';setPad('neutral',`<div class="sig" style="background:var(--card);box-shadow:none;color:var(--sub);font-size:22px">…</div><div class="fb" id="fb"></div>`);
+    later(()=>{if(!G||G.state!=='wait')return;const k=seq[i];G.state=k;G.goT=null;
+      setPad('neutral',k==='go'?`<div class="sig go"><div class="mk">●</div>タップ</div><div class="fb" id="fb"></div>`:`<div class="sig stop" style="border-radius:28px"><div class="mk">■</div>がまん</div><div class="fb" id="fb"></div>`);
+      markShown(t=>{if(G)G.goT=t;});
+      later(()=>{if(!G||G.state!==k)return;if(k==='stop'){score+=1;ok++;gngFb('よく我慢した！',true);}else gngFb('遅い！',false);G.state='b';i++;later(next,500);},1000);
+    },rnd(600,1400));
+  };
+  G.onPad=e=>{const t=tapTime(e);
+    if(G.state==='wait'){clearTimers();gngFb('フライング！',false);G.state='b';i++;later(next,600);return;}
+    if(G.state==='go'){clearTimers();const rt=t-(G.goT!=null?G.goT:t);if(rt>=100){score+=.15+.85*lin(rt,250,600);ok++;gngFb(Math.round(rt)+'ms',true);}else gngFb('見込み押し！',false);G.state='b';i++;later(next,450);return;}
+    if(G.state==='stop'){clearTimers();gngFb('がまんできなかった！',false);G.state='b';i++;later(next,600);}};
+  next();
+}
+// 3. 色ことば（1問）
+function qColor(){
+  G.v={kanji:G.q.kanji};
+  const word=COLORS[Math.floor(R()*4)],others=COLORS.filter(c=>c!==word),ink=others[Math.floor(R()*3)]; // 必ず文字と色が不一致
+  const order=shuffle(COLORS.slice());
+  setPad('neutral',`<div class="cbar"><i id="cbar"></i></div><div class="cword" id="cword"></div><div class="cbtns" id="cbtns">${order.map(c=>`<button data-k="${c.k}" style="background:${c.c};${c.k==='yellow'?'color:#3a2a00':''}">${cw(c)}</button>`).join('')}</div><div class="fb" id="fb"></div>`);
+  G.state='wait';
+  pad.querySelectorAll('#cbtns button').forEach(b=>b.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();
+    if(!G||G.state!=='go')return;const t=tapTime(ev),rt=t-(G.goT!=null?G.goT:t);G.state='x';
+    if(b.dataset.k===ink.k){buzz('light');chAnswer(qPts(true,lin(rt,500,2500)),Math.round(rt)+'ms');}
+    else{buzz('heavy');chAnswer(0,b.dataset.k===word.k?'文字に釣られた':'ちがう色');}},{passive:false}));
+  later(()=>{if(!G||G.state!=='wait')return;const w=$('cword');w.textContent=cw(word);w.style.color=ink.c;G.state='go';markShown(t=>{if(G)G.goT=t;});
+    const bar=$('cbar');bar.style.transition='width 3000ms linear';requestAnimationFrame(()=>requestAnimationFrame(()=>{bar.style.width='0%';}));
+    later(()=>{if(G&&G.state==='go'){G.state='x';chAnswer(0,'時間切れ');}},3000);},rnd(500,900));
+}
+// 4. 数字タッチ（3×3・1→9 または 9→1）
+function qNum(){
+  const rev=!!G.q.rev;let nx=rev?9:1,miss=0,t0=null;
+  const nums=shuffle([...Array(9)].map((_,i)=>i+1));
+  setPad('neutral',`<div class="ntop" id="ntime">0.00</div><div class="nnext">次は <b id="nnext">${nx}</b></div><div class="grid g3" id="grid">${nums.map(v=>`<button data-v="${v}">${v}</button>`).join('')}</div>`);
+  G.state='go';markShown(t=>{if(!G)return;t0=t;const tick=()=>{if(!G||G.state!=='go')return;$('ntime').textContent=((now()-t0)/1000+miss).toFixed(2);G.raf=requestAnimationFrame(tick);};tick();});
+  pad.querySelectorAll('#grid button').forEach(b=>b.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();
+    if(!G||G.state!=='go'||t0==null)return;const v=+b.dataset.v;
+    if(v===nx){b.classList.add('done');nx+=rev?-1:1;beep(500+(rev?10-nx:nx)*30,.05,'triangle',.07);
+      if(rev?nx<1:nx>9){G.state='x';cancelAnimationFrame(G.raf);const sec=(tapTime(ev)-t0)/1000+miss;chAnswer(qPts(true,lin(sec,2.5,9)),sec.toFixed(2)+'秒');return;}
+      $('nnext').textContent=nx;}
+    else if(!b.classList.contains('done')){miss++;sfx.ng();b.classList.add('bad');setTimeout(()=>b.classList.remove('bad'),250);}},{passive:false}));
+  later(()=>{if(G&&G.state==='go'){G.state='x';chAnswer(0,'時間切れ');}},15000);
+}
+// 5. 色彩感覚（1問・難しさは日替わりでステージ10〜14相当）
+function qHue(){
+  const st=G.q.stage,p=huePuzzle(hueSize(st),hueDelta(st));
+  setPad('neutral',`<div class="tinfo">色の差 <b>${fmtD(p.d)}</b>　1つだけ探す</div>
+    <div class="tgrid n${p.n}" id="tgrid" style="grid-template-columns:repeat(${p.n},1fr)">${Array.from({length:p.n*p.n},(_,i)=>`<i data-i="${i}" style="background:${i===p.idx?p.odd:p.base}"></i>`).join('')}</div>
+    <div class="cbar" style="margin:18px 0 0"><i id="cbar"></i></div><div class="fb" id="fb"></div>`);
+  G.state='go';let t0=now();markShown(t=>{t0=t;});
+  pad.querySelectorAll('#tgrid i').forEach(el=>el.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();
+    if(!G||G.state!=='go')return;G.state='x';const i=+el.dataset.i,ms=tapTime(ev)-t0;
+    if(i===p.idx){chAnswer(qPts(true,lin(ms,1200,10000)),(ms/1000).toFixed(1)+'秒');}
+    else{el.classList.add('miss');$('tgrid').children[p.idx].classList.add('ans');later(()=>chAnswer(0,'ざんねん'),700);}},{passive:false}));
+  const bar=$('cbar');bar.style.transition='width 10000ms linear';requestAnimationFrame(()=>requestAnimationFrame(()=>{bar.style.width='0%';}));
+  later(()=>{if(G&&G.state==='go'){G.state='x';$('tgrid').children[p.idx].classList.add('ans');later(()=>chAnswer(0,'時間切れ'),700);}},10000);
+}
+// 6. 記憶力（1問・お題は日替わり。3×3）
+function qMem(){
+  const kind=G.q.kind,len=MEM_Q[kind].len,n=9;
+  Object.assign(G,{gs:3,kind,len,lv:0,lives:1,maxL:1,miss:0,score:0,lastKind:null});
+  if(kind==='flash'){G.seq=memDistinct(n,len);G.need=new Set(G.seq);G.got=new Set();}
+  else if(kind==='decoy'){G.seq=memPick(n,len);const used=new Set(G.seq),free=[...Array(n).keys()].filter(i=>!used.has(i)),dec=shuffle(free,R).slice(0,2);
+    const steps=G.seq.map(i=>({i,blue:false}));dec.forEach(i=>steps.splice(1+Math.floor(R()*steps.length),0,{i,blue:true}));G.steps=steps;G.decoys=new Set(dec);}
+  else G.seq=memPick(n,len);
+  G.answer=kind==='rev'?G.seq.slice().reverse():G.seq;
+  G.qmem=true;memPlay();
 }
 function finishChallenge(){
   chSync();
-  const c=CH.c,res=CH.res;CH=null;
-  const total=res.reduce((a,b)=>a+b.pts,0),avgP=res.reduce((a,b)=>a+b.p,0)/res.length;
-  const r=rankOf0(avgP);r.t=RANK_HI[r.g];
+  const c=CH.c,res=CH.res;CH=null;G=null;
+  const total=res.reduce((a,b)=>a+b.pts,0);
+  const g=total>=9000?'SS':total>=8000?'S':total>=6500?'A':total>=5000?'B':total>=3000?'C':'D';const r={g,t:RANK_HI[g]};
   S.plays++;S.doneSinceAd++;
   const isBest=S.ch.best==null||total>S.ch.best;
   if(isBest){S.ch.best=total;S.ch.bestV=null;}
   S.ch.log[c.d]=S.ch.best;
   const keys=Object.keys(S.ch.log).map(Number).sort((a,b)=>b-a);keys.slice(30).forEach(k=>delete S.ch.log[k]);
   if(S.ch.last!==c.d){S.ch.streak=S.ch.last===c.d-1?S.ch.streak+1:1;S.ch.last=c.d;}
-  save();
+  save();sfx.fin();buzz('success');
   Native.gcSubmit('pr_daily',total);
-  last={m:null,v:total,p:avgP,r,age:null,ch:c,pts:total,res};
+  last={m:null,v:total,p:null,r,age:null,ch:c,pts:total,res};
   const left=CH_TRIES-S.ch.tries;
   $('rCh').innerHTML=`<div class="chtag" style="margin-top:6px">今日のチャレンジ #${c.no}（${dayLabel(c.d)}）</div>`;
-  $('rMode').textContent='5種目の合計';
+  $('rMode').textContent='お題5つの合計';
   $('rVal').innerHTML=`${total.toLocaleString()}<small>pt</small>`;
   $('rNew').innerHTML=isBest&&S.ch.tries>1?'<span class="newrec">今日のベスト更新！</span>':'';
-  $('rRank').innerHTML=`<div class="g g${r.g}">${r.g}</div><div><div class="tt">${r.t}</div><div class="pc">5種目の平均 上位 ${pctTxt(avgP)}%（目安）</div></div>`;
-  $('rStats').innerHTML='<div class="chres">'+res.map((x,k)=>{const M=MODES[x.m],rr=rankOf0(x.p);return `<div class="cr"><span class="n">${k+1}</span><div class="nm"><b>${M.name}</b><span>${x.v.name}</span></div><div class="vv">${fmt(x.m,x.val)}<small>${M.unit}</small></div><div class="gg g${rr.g}">${rr.g}</div><div class="pp">${x.pts.toLocaleString()}</div></div>`;}).join('')+'</div>';
+  $('rRank').innerHTML=`<div class="g g${r.g}">${r.g}</div><div><div class="tt">${r.t}</div><div class="pc">10,000pt中 ${total.toLocaleString()}pt</div></div>`;
+  const gr=p=>p>=1800?'SS':p>=1600?'S':p>=1300?'A':p>=1000?'B':p>0?'C':'D';
+  $('rStats').innerHTML='<div class="chres">'+res.map((x,k)=>`<div class="cr"><span class="n">${k+1}</span><div class="nm"><b>${QT[x.m].name}</b><span>${x.q.label}</span></div><div class="vv">${x.label}</div><div class="gg g${gr(x.pts)}">${gr(x.pts)}</div><div class="pp">${x.pts.toLocaleString()}</div></div>`).join('')+'</div>';
   $('rTrials').innerHTML=`<span>今日のベスト ${S.ch.best.toLocaleString()}pt</span><span>連続参加 ${S.ch.streak}日</span>`;
   $('rBadge').textContent='';
-  $('rNote').textContent='ポイントは各種目の上位%（目安）から計算し、5種目を合計します。全国の順位はGame Centerの「今日のランキング」です。';
+  $('rNote').textContent='お題1つ2,000ptで、速く正確なほど高得点。全国の順位はGame Centerの「今日のランキング」です。';
   $('bAgain').textContent=left>0?`もう一度挑戦（あと${left}回）`:'';$('bAgain').style.display=left>0?'':'none';
   showGcRank('pr_daily','今日');
   show('result');
   if(S.plays>=3&&(['SS','S','A'].includes(r.g)||isBest&&S.ch.tries>1))Native.requestReview();
+  if(!S.notif.asked)setTimeout(()=>modal('毎日のお知らせ','明日のお題が出たら、毎日19時にお知らせしましょうか？（あとから設定で変えられます）',()=>notifTurnOn(),()=>{S.notif.asked=true;save();},'お知らせする'),900);
+  else planNotifs();
 }
 // Game Centerの順位を結果画面に出す(取れないときは案内だけ)
 function showGcRank(id,label){
@@ -957,22 +1188,22 @@ async function resultImage(L,noMedal){
   x.fillStyle='#f2f5fb';x.font=`800 54px ${F}`;x.fillText('反射神経テスト',W/2+20,140);
   const medal=noMedal?null:await loadImg('img/rank_'+L.r.g.toLowerCase()+'.png');
   const drawMedal=(cx,cy,s)=>{if(medal)x.drawImage(medal,cx-s/2,cy,s,s);x.fillStyle=['SS','S'].includes(L.r.g)?'#3a2a00':'#fff';x.font=`900 ${Math.round(s*.37)}px ${N}`;x.fillText(L.r.g,cx,cy+s*(L.r.g==='SS'?.67:.63));};
-  if(L.ch&&L.res){ // 今日のチャレンジ(5種目)
+  if(L.ch&&L.res){ // 今日のチャレンジ(5問)
     x.fillStyle='#ffb020';x.font=`800 46px ${F}`;x.fillText(`今日のチャレンジ #${L.ch.no}（${dayLabel(L.ch.d)}）`,W/2,240);
     x.textAlign='left';x.fillStyle='#f2f5fb';x.font=`900 150px ${N}`;x.fillText(L.pts.toLocaleString(),110,420);
     const tw=x.measureText(L.pts.toLocaleString()).width;x.fillStyle='#8e9ab5';x.font=`800 54px ${F}`;x.fillText('pt',110+tw+14,420);
     x.textAlign='center';drawMedal(W-210,290,200);
-    x.fillStyle='#8e9ab5';x.font=`700 38px ${F}`;x.textAlign='left';x.fillText(L.r.t+'・5種目の平均 上位'+pctTxt(L.p)+'%（目安）',110,480);
+    x.fillStyle='#8e9ab5';x.font=`700 38px ${F}`;x.textAlign='left';x.fillText(L.r.t+'・10,000pt中',110,480);
     let y=560;
     L.res.forEach((r,k)=>{const M=MODES[r.m];
       x.fillStyle='#1b2338';x.beginPath();if(x.roundRect)x.roundRect(90,y,W-180,104,22);else x.rect(90,y,W-180,104);x.fill();
       x.fillStyle='#8e9ab5';x.font=`800 36px ${N}`;x.textAlign='center';x.fillText(String(k+1),140,y+66);
-      x.textAlign='left';x.fillStyle='#f2f5fb';x.font=`800 38px ${F}`;x.fillText(M.name,190,y+50);
-      x.fillStyle='#8e9ab5';x.font=`600 28px ${F}`;x.fillText(r.v.name,190,y+86);
-      x.textAlign='right';x.fillStyle='#f2f5fb';x.font=`800 40px ${N}`;x.fillText(fmt(r.m,r.val)+M.unit,W-300,y+64);
+      x.textAlign='left';x.fillStyle='#f2f5fb';x.font=`800 38px ${F}`;x.fillText(QT[r.m].name,190,y+50);
+      x.fillStyle='#8e9ab5';x.font=`600 28px ${F}`;x.fillText(r.q.label.slice(0,20),190,y+86);
+      x.textAlign='right';x.fillStyle='#f2f5fb';x.font=`800 40px ${N}`;x.fillText(r.label,W-300,y+64);
       x.fillStyle='#ffb020';x.font=`800 38px ${N}`;x.fillText(r.pts.toLocaleString(),W-120,y+64);
       y+=120;});
-    x.textAlign='center';x.fillStyle='#22d07a';x.font=`800 44px ${F}`;x.fillText('同じ5種目で、あなたも挑戦！',W/2,H-110);
+    x.textAlign='center';x.fillStyle='#22d07a';x.font=`800 44px ${F}`;x.fillText('同じお題で、あなたも挑戦！',W/2,H-110);
   }else{
     const M=MODES[L.m];let y=250;
     x.fillStyle='#8e9ab5';x.font=`700 46px ${F}`;x.fillText(M.name,W/2,y);
@@ -988,7 +1219,7 @@ async function resultImage(L,noMedal){
 }
 async function shareResult(L){
   let t;
-  if(L.ch&&L.res){t=`【反射神経テスト】今日のチャレンジ #${L.ch.no}\n5種目の合計 ${L.pts.toLocaleString()}pt（${L.r.g}ランク）\n`+L.res.map((r,k)=>`${k+1}. ${MODES[r.m].name} ${fmt(r.m,r.val)}${MODES[r.m].unit}`).join('\n')+`\n同じ5種目で勝負しよう！ #反射神経テスト`;}
+  if(L.ch&&L.res){t=`【反射神経テスト】今日のチャレンジ #${L.ch.no}\nお題5つの合計 ${L.pts.toLocaleString()}pt（${L.r.g}ランク）\n`+L.res.map((r,k)=>`${k+1}. ${QT[r.m].name} ${r.label}`).join('\n')+`\n同じお題で勝負しよう！ #反射神経テスト`;}
   else{const M=MODES[L.m];t=`【反射神経テスト】${M.name}：${fmt(L.m,L.v)}${M.unit}（${L.r.g}ランク・上位${pctTxt(L.p)}%）`+(L.age!=null?`\n反射神経年齢は ${L.age}歳 でした`:'')+`\nあなたは何${M.unit}？ #反射神経テスト`;}
   let img=null;try{img=await resultImage(L);}catch(e){}
   const handled=img?await Native.shareImage(img,t):false;
@@ -1003,15 +1234,15 @@ function showSharePreview(img,t){ // ブラウザで画像の共有ができな�
 /* ---------- ホームの「今日のチャレンジ」カード ---------- */
 function renderChCard(){
   chSync();
-  const c=todayCh(),left=CH_TRIES-S.ch.tries,MAXP=CH_N*9990;
+  const c=todayCh(),left=CH_TRIES-S.ch.tries,MAXP=CH_N*QMAX;
   const days=[];for(let k=6;k>=0;k--){const d=c.d-k;days.push({d,v:S.ch.log[d]});}
   const bars=days.map(x=>`<div class="cb"><i style="height:${x.v!=null?Math.max(8,Math.round(x.v/MAXP*100)):0}%"></i><span>${dayLabel(x.d).split('/')[1]}</span></div>`).join('');
   const icons=c.stages.map(s=>`<div class="ci ${MODES[s.m].cls}" title="${MODES[s.m].name}"><img src="img/mode_${s.m}.png" alt=""></div>`).join('<i>›</i>');
   $('chCard').innerHTML=`<div class="chtop"><span class="chtag">今日のチャレンジ #${c.no}</span><span class="chday">${dayLabel(c.d)}・毎日0時に変わる</span></div>
-    <div class="t5">今日の5種目</div><div class="chicons">${icons}</div>
-    <div class="chstat">${S.ch.best!=null?`今日のベスト <b>${S.ch.best.toLocaleString()}</b>pt`:'全員が同じ5種目で、合計ポイントの全国ランキングに挑戦'}${S.ch.streak>1&&S.ch.last>=c.d-1?`　🔥${S.ch.streak}日連続`:''}</div>
-    <div class="chbars">${bars}</div>
-    <div class="navrow"><button class="btn" id="bCh">${left>0?`挑戦する（あと${left}回）`:'今日は終わり・また明日'}</button><button class="btn ghost" id="bRank" style="flex:.55">🏆 ランキング</button></div>`;
+    <div class="t5">今日のお題</div><div class="chicons">${icons}</div>
+    <div class="chstat">${S.ch.best!=null?`今日のベスト <b>${S.ch.best.toLocaleString()}</b>pt`:'いろいろな種目から1つずつ、5つのお題。全員が同じ問題で全国ランキングに挑戦'}${S.ch.streak>1&&S.ch.last>=c.d-1?`　🔥${S.ch.streak}日連続`:''}</div>
+    ${days.some(x=>x.v!=null)?`<div class="chbars">${bars}</div>`:''}
+    <div class="navrow"><button class="btn" id="bCh">${left>0?`挑戦する（あと${left}回）`:'今日は終わり・また明日'}</button><button class="btn ghost" id="bRank" style="flex:.5;white-space:nowrap;font-size:14px">🏆 順位</button></div>`;
   $('bCh').onclick=()=>{sfx.tap();startChallenge();};
   $('bRank').onclick=()=>{sfx.tap();if(!Native.isApp){modal('全国ランキング','アプリ版ではGame Centerの全国ランキング（今日のチャレンジ・種目ごと）を見られます。');return;}Native.gcShow('pr_daily');};
 }
@@ -1064,12 +1295,43 @@ const OTHER_APPS=[
 function renderSettings(){
   $('swSound').querySelector('.sw').classList.toggle('on',S.sound);
   $('swHaptic').querySelector('.sw').classList.toggle('on',S.haptic);
+  $('swNotif').querySelector('.sw').classList.toggle('on',S.notif.on);$('notifTime').value=S.notif.time;
   const p=Native.isPremium();
   $('buyLabel').textContent=p?'購入済み':'¥300（買い切り）';
   $('otherApps').innerHTML=OTHER_APPS.map(a=>`<a class="item" href="https://apps.apple.com/jp/app/id${a.id}" target="_blank" rel="noopener"><div>${a.n}<br><span>${a.d}</span></div><span>›</span></a>`).join('');
 }
 $('swSound').onclick=()=>{S.sound=!S.sound;save();renderSettings();sfx.tap();};
 $('swHaptic').onclick=()=>{S.haptic=!S.haptic;save();renderSettings();buzz('light');};
+$('swNotif').onclick=()=>{sfx.tap();if(S.notif.on){S.notif.on=false;save();renderSettings();planNotifs();return;}notifTurnOn();};
+$('notifTime').onchange=e=>{S.notif.time=e.target.value||'19:00';save();planNotifs();};
+/* ---------- 毎日のお知らせ ----------
+ * これから7日分の「今日のチャレンジ」を、指定の時刻（日本時間）に予約する。
+ * お題は日付で決まるので、通知に中身（今日のお題）を書ける。今日すでに挑戦した日は今日の分を出さない。
+ * アプリを開くたび・挑戦するたびに予約し直す（7日以上開かなければ通知は止まる） */
+function notifTurnOn(){
+  S.notif.asked=true;save();
+  if(!Native.isApp){S.notif.on=true;save();renderSettings();modal('毎日のお知らせ','アプリ版では、毎日決まった時刻に今日のお題をお知らせします。');return;}
+  Native.notifPermission().then(ok=>{
+    S.notif.on=!!ok;save();renderSettings();planNotifs();
+    if(!ok)modal('通知がオフになっています','iPhoneの「設定」→「通知」→「反射神経テスト」で通知を許可すると、お知らせが届きます。');
+  });
+}
+function planNotifs(){
+  if(!S.notif.on){Native.notifCancel();return;}
+  const [hh,mm]=String(S.notif.time||'19:00').split(':').map(Number);
+  const d0=dayIdx(),list=[];
+  for(let k=0;k<7;k++){
+    const d=d0+k,at=new Date(DAY0+d*86400000+(hh||0)*3600000+(mm||0)*60000);
+    if(at.getTime()<=Date.now()+60000)continue;
+    if(k===0&&S.ch.day===d0&&S.ch.tries>0)continue; // 今日はもう挑戦した
+    const c=chOf(d),names=c.stages.map(st=>QT[st.m].name).join('・');
+    const alive=S.ch.streak>0&&S.ch.last>=d0-1; // 連続参加がつながっている（昨日か今日に挑戦した）
+    const title=k===0&&alive&&S.ch.streak>=2?`🔥${S.ch.streak}日連続中！今日のチャレンジ #${c.no}`:`今日のチャレンジ #${c.no}`;
+    const body=`今日のお題：${names}。全国ランキングに挑戦しよう`;
+    list.push({at,title,body});
+  }
+  Native.notifPlan(list);
+}
 $('bBuy').onclick=()=>{sfx.tap();if(!Native.isPremium())Native.buyPremium();};
 $('bRestore').onclick=()=>{sfx.tap();Native.restore();};
 $('bReset').onclick=()=>{modal('記録をリセット','すべての記録とバッジを消します。元に戻せません。',()=>{
@@ -1078,6 +1340,13 @@ $('bReset').onclick=()=>{modal('記録をリセット','すべての記録とバ
 /* ---------- 広告・課金 ---------- */
 window.onPremiumChanged=v=>{applyPremium();if(v)toast('広告を削除しました。ありがとうございます！');};
 function applyPremium(){document.body.classList.toggle('has-banner',!Native.isPremium()&&Native.isApp);if($('settings').classList.contains('on'))renderSettings();updateBanner();}
+window.onBannerSize=h=>{h=Math.round(+h||0);document.body.classList.toggle('bn-on',h>0);if(h>0)document.documentElement.style.setProperty('--bnh',h+'px');fitHome();};
+function fitHome(){
+  const s=$('home');if(!s)return;const L=['fit1','fit2','fit3','fit4'];
+  s.classList.remove(...L);if(!s.classList.contains('on'))return;
+  for(const c of L){if(s.scrollHeight<=s.clientHeight+1)break;s.classList.add(c);}
+}
+addEventListener('resize',()=>fitHome());addEventListener('load',()=>fitHome());
 function updateBanner(){
   // テスト中は絶対に出さない(誤タップ防止と、測定への影響をなくすため)
   const on=document.querySelector('.screen.on');
@@ -1085,7 +1354,7 @@ function updateBanner(){
 }
 
 renderHome();
-Native.init().then(()=>{applyPremium();});
+Native.init().then(()=>{applyPremium();planNotifs();});
 </script>
 </body>
 </html>
